@@ -123,9 +123,9 @@ object Reliability {
         )
 
         list += Check(
-            "Originalhintergrund gewählt",
+            "Hintergrund „Normal“ gewählt",
             Wallpapers.hasOriginal(ctx),
-            "Damit Abmelden deinen eigenen Hintergrund wiederherstellen kann.",
+            "Einstellungen → Hintergründe → Normal. Damit Ausloggen deinen Hintergrund wiederherstellen kann.",
         )
 
         val pm = ctx.getSystemService(PowerManager::class.java)

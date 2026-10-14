@@ -22,9 +22,11 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
   direkt). Dort gibt es dieselben Knöpfe noch einmal ohne ZEUS-Start.
 - **Keine Erinnerung zum Abmelden**: Der grüne Hintergrund ist die Erinnerung. *Eingeloggt*
   bleibt über Nacht, bis du abmeldest; solange wird morgens nichts ausgelöst.
-- **Hintergründe**: rot/grün mit großem Text, Farbe wählbar oder eigenes Bild.
-  Start- und/oder Sperrbildschirm. Dein **Originalbild wählst du einmal** in der App aus
-  (Android lässt Apps den aktuellen Hintergrund nicht zuverlässig auslesen).
+- **Drei Hintergründe** in den Einstellungen, jeweils mit Vorschau: *Normal* (dein eigenes
+  Bild, einmal auswählen – Android lässt Apps den aktuellen Hintergrund nicht zuverlässig
+  auslesen), *Einloggen-Erinnerung* und *Eingeloggt* (Farbe mit großem Text oder eigenes
+  Bild). Für Start- und/oder Sperrbildschirm. Änderungen am gerade aktiven Zustand werden
+  sofort übernommen.
 - **Prüfliste** (in den Einstellungen) mit Links in die Systemeinstellungen und *Test auslösen*.
 
 Hinweis: Für den pünktlichen Start nutzt die App einen Wecker-Alarm. Deshalb zeigt Android
@@ -35,7 +37,7 @@ für die Startzeit des Fensters (7:00) ein Wecker-Symbol bzw. „nächster Wecke
 1. Prüfliste durchgehen: Benachrichtigungen, exakte Alarme, Standort „genau“ und
    **„Immer erlauben“**, Akku-Optimierung aus, auf Huawei App-Start „manuell verwalten“.
 2. ZEUS-App wählen (Liste aller Apps, Kandidaten mit „zeus“/„isgus“ stehen oben).
-3. Originalhintergrund wählen.
+3. Hintergründe einstellen, mindestens *Normal* wählen.
 4. An der FH: *Aktuelles WLAN übernehmen* und/oder *Aktuellen Standort übernehmen*.
 
 ## Installieren und aktualisieren

@@ -34,7 +34,7 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 - Zustände `NEUTRAL` / `NICHT_EINGELOGGT` / `EINGELOGGT` in SharedPreferences, geschrieben
   mit `commit()`. Laufzeit-Zustand und `Config` werden getrennt geschrieben (sonst
   überschreibt die Oberfläche mit alter Kopie einen gerade ausgelösten Zustand).
-- **Alle Zustandswechsel nur über `Stempel.setState`** (Meldung, Widget, Erkennung neu
+- **Alle Zustandswechsel nur über `Stempel.setState`** (Meldung, Erkennung neu
   planen, Hintergrund). Blockiert wegen des Hintergrunds – nie im Hauptthread.
 - Auslösen nur über `Stempel.maybeTrigger` → `StateLogic.shouldTrigger`: im Fenster, aus
   `NEUTRAL`, höchstens einmal am Tag. „Test auslösen“ umgeht Fenster und Tagessperre und
@@ -59,6 +59,10 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 - Originalhintergrund wird nie vom System gelesen, sondern per Photo Picker gewählt und nach
   `files/original` kopiert. Ohne Original beim Abmelden **immer erst fragen**, bevor
   `WallpaperManager.clear()` läuft (`LogoutNoOriginalDialog`).
+- Einstellungen → Hintergründe: drei Plätze *Normal* (`files/original`), *Einloggen-Erinnerung*
+  und *Eingeloggt* (Farbe oder eigenes Bild `files/bild_<zustand>`), mit Vorschau
+  (`Wallpapers.preview`). Änderung am aktiven Zustand wird sofort angewendet (Wunsch des
+  Nutzers: alle drei in der App einstellbar).
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
 
 ## Rahmenbedingungen

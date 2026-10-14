@@ -8,6 +8,13 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -193,7 +200,7 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
                     Text(
                         "Noch kein Originalhintergrund gewählt. Ohne ihn kann die App beim Abmelden " +
                             "deinen Hintergrund nicht wiederherstellen – bitte unten unter " +
-                            "„Hintergrund“ wählen.",
+                            "„Hintergründe → Normal“ wählen.",
                         modifier = Modifier.padding(16.dp),
                     )
                 }
@@ -365,13 +372,20 @@ private fun WifiCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
 @Composable
 private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> Config) -> Unit) {
     val ctx = LocalContext.current
-    var target by remember { mutableStateOf<java.io.File?>(null) }
+    var target by remember { mutableStateOf<StempelState?>(null) }
     var refresh by remember { mutableIntStateOf(0) }
+
+    /** Ist [state] gerade aktiv, den geänderten Hintergrund sofort übernehmen. */
+    fun reapply(state: StempelState) {
+        if (Store(ctx).state == state) AppScope.launch { Wallpapers.apply(ctx, state) }
+    }
+
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        val t = target ?: return@rememberLauncherForActivityResult
+        val state = target ?: return@rememberLauncherForActivityResult
         if (uri != null) {
             AppScope.launch {
-                val ok = Wallpapers.import(ctx, uri, t)
+                val ok = Wallpapers.import(ctx, uri, Wallpapers.imageFile(ctx, state))
+                if (ok) reapply(state)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(ctx, if (ok) "Bild gespeichert" else "Bild konnte nicht gelesen werden", Toast.LENGTH_SHORT).show()
                     Store.version.value = Store.version.value + 1
@@ -380,18 +394,23 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
             }
         }
     }
-    fun pick(f: java.io.File) {
-        target = f
+    fun pick(state: StempelState) {
+        target = state
         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
+    fun remove(state: StempelState) {
+        Wallpapers.imageFile(ctx, state).delete()
+        refresh++
+        Store.version.value = Store.version.value + 1
+        if (state != StempelState.NEUTRAL) reapply(state)
+    }
 
-    SectionCard("Hintergrund") {
-        Text(if (hasOriginal) "Originalbild: gespeichert ✓" else "Originalbild: nicht gewählt")
-        OutlinedButton(onClick = { pick(Wallpapers.originalFile(ctx)) }) {
-            Text(if (hasOriginal) "Originalbild ändern" else "Originalbild wählen")
-        }
-
-        Text("Bildschirme", style = MaterialTheme.typography.labelLarge)
+    SectionCard("Hintergründe") {
+        Text(
+            "Für jeden Zustand ein eigener Hintergrund. Änderungen am gerade aktiven Zustand " +
+                "werden sofort übernommen.",
+            style = MaterialTheme.typography.bodySmall,
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(cfg.onHome, { v -> save { it.copy(onHome = v) } })
             Text("Startbildschirm")
@@ -399,44 +418,110 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
             Text("Sperrbildschirm")
         }
 
-        StateImageRow("„Nicht eingeloggt“", OUT_COLORS, cfg.colorOut, Wallpapers.customFile(ctx, StempelState.NICHT_EINGELOGGT), refresh,
-            onColor = { c -> save { it.copy(colorOut = c) } }, onPick = ::pick, onRemove = { it.delete(); refresh++ })
-        StateImageRow("„Eingeloggt“", IN_COLORS, cfg.colorIn, Wallpapers.customFile(ctx, StempelState.EINGELOGGT), refresh,
-            onColor = { c -> save { it.copy(colorIn = c) } }, onPick = ::pick, onRemove = { it.delete(); refresh++ })
+        WallpaperSlot(
+            title = "Normal",
+            hint = if (hasOriginal) {
+                "Dein normaler Hintergrund, kommt nach dem Ausloggen zurück."
+            } else {
+                "Noch nicht gewählt – ohne Bild kann Ausloggen deinen Hintergrund nicht wiederherstellen."
+            },
+            state = StempelState.NEUTRAL,
+            colors = null,
+            selected = 0,
+            refresh = refresh,
+            onColor = {},
+            onPick = { pick(StempelState.NEUTRAL) },
+            onRemove = null,
+        )
+        WallpaperSlot(
+            title = "Einloggen-Erinnerung",
+            hint = "Wenn du an der FH erkannt wirst und noch nicht eingeloggt bist.",
+            state = StempelState.NICHT_EINGELOGGT,
+            colors = OUT_COLORS,
+            selected = cfg.colorOut,
+            refresh = refresh,
+            onColor = { c -> save { it.copy(colorOut = c) }; reapply(StempelState.NICHT_EINGELOGGT) },
+            onPick = { pick(StempelState.NICHT_EINGELOGGT) },
+            onRemove = { remove(StempelState.NICHT_EINGELOGGT) },
+        )
+        WallpaperSlot(
+            title = "Eingeloggt",
+            hint = "Nach dem Einloggen, bis du dich ausloggst.",
+            state = StempelState.EINGELOGGT,
+            colors = IN_COLORS,
+            selected = cfg.colorIn,
+            refresh = refresh,
+            onColor = { c -> save { it.copy(colorIn = c) }; reapply(StempelState.EINGELOGGT) },
+            onPick = { pick(StempelState.EINGELOGGT) },
+            onRemove = { remove(StempelState.EINGELOGGT) },
+        )
     }
 }
 
+/**
+ * Ein Hintergrund mit Vorschau. [colors] = null: nur eigenes Bild (Normal), sonst
+ * erzeugtes Farbbild mit Text oder eigenes Bild.
+ */
 @Composable
-private fun StateImageRow(
+private fun WallpaperSlot(
     title: String,
-    colors: List<Int>,
+    hint: String,
+    state: StempelState,
+    colors: List<Int>?,
     selected: Int,
-    file: java.io.File,
     refresh: Int,
     onColor: (Int) -> Unit,
-    onPick: (java.io.File) -> Unit,
-    onRemove: (java.io.File) -> Unit,
+    onPick: () -> Unit,
+    onRemove: (() -> Unit)?,
 ) {
-    val hasCustom = remember(refresh, file) { file.length() > 0 }
-    Text(title, style = MaterialTheme.typography.labelLarge)
-    if (hasCustom) {
-        Text("Eigenes Bild gewählt", style = MaterialTheme.typography.bodySmall)
-    } else {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            colors.forEach { c ->
-                Box(
-                    Modifier
-                        .size(36.dp)
-                        .background(Color(c), CircleShape)
-                        .border(if (c == selected) 3.dp else 0.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                        .clickable { onColor(c) },
-                )
-            }
+    val ctx = LocalContext.current
+    val file = Wallpapers.imageFile(ctx, state)
+    var preview by remember { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(refresh, selected) {
+        preview = withContext(Dispatchers.IO) {
+            Wallpapers.preview(ctx, state, 240)?.asImageBitmap()
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = { onPick(file) }) { Text("Eigenes Bild…") }
-        if (hasCustom) TextButton(onClick = { onRemove(file) }) { Text("Entfernen") }
+    val hasImage = remember(refresh) { file.length() > 0 }
+
+    HorizontalDivider()
+    Text(title, style = MaterialTheme.typography.titleSmall)
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(
+            Modifier
+                .size(width = 60.dp, height = 120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            val p = preview
+            if (p != null) {
+                Image(p, contentDescription = title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            } else {
+                Text("–")
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(hint, style = MaterialTheme.typography.bodySmall)
+            if (colors != null && !hasImage) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    colors.forEach { c ->
+                        Box(
+                            Modifier
+                                .size(32.dp)
+                                .background(Color(c), CircleShape)
+                                .border(if (c == selected) 3.dp else 0.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                .clickable { onColor(c) },
+                        )
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedButton(onClick = onPick) { Text(if (hasImage) "Bild ändern" else "Bild wählen") }
+                if (hasImage && onRemove != null) TextButton(onClick = onRemove) { Text("Farbe statt Bild") }
+            }
+        }
     }
 }
 

@@ -3,6 +3,7 @@ package de.fhstempelkarte
 import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -27,6 +28,28 @@ object Wallpapers {
     fun originalFile(ctx: Context) = File(ctx.filesDir, "original")
     fun customFile(ctx: Context, state: StempelState) = File(ctx.filesDir, "bild_${state.name.lowercase()}")
     fun hasOriginal(ctx: Context) = originalFile(ctx).length() > 0
+
+    /** Bilddatei des Zustands: `NEUTRAL` = Original, sonst eigenes Bild statt Farbe. */
+    fun imageFile(ctx: Context, state: StempelState) =
+        if (state == StempelState.NEUTRAL) originalFile(ctx) else customFile(ctx, state)
+
+    /** Kleine Vorschau (Höhe [height] px): gewähltes Bild oder erzeugtes Farbbild; null ohne Normal-Bild. */
+    fun preview(ctx: Context, state: StempelState, height: Int): Bitmap? {
+        val f = imageFile(ctx, state)
+        if (f.length() > 0) {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(f.path, bounds)
+            var sample = 1
+            while (bounds.outHeight / (sample * 2) >= height) sample *= 2
+            return BitmapFactory.decodeFile(f.path, BitmapFactory.Options().apply { inSampleSize = sample })
+        }
+        if (state == StempelState.NEUTRAL) return null
+        val cfg = Store(ctx).config
+        val (w, h) = screenSize(ctx)
+        val pw = (height * w.toFloat() / h).toInt().coerceAtLeast(1)
+        val out = state == StempelState.NICHT_EINGELOGGT
+        return render(pw, height, if (out) cfg.colorOut else cfg.colorIn, if (out) TEXT_OUT else TEXT_IN)
+    }
 
     /** Kopiert ein gewähltes Bild (Photo Picker) in den internen Speicher. */
     fun import(ctx: Context, uri: Uri, target: File): Boolean = runCatching {
