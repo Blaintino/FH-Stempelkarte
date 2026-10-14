@@ -15,6 +15,8 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
   - **WLAN**: SSID(s) einstellbar, z. B. `eduroam`, mit „Aktuelles WLAN übernehmen“.
   - **Standort**: FH-Position per „Aktuellen Standort übernehmen“, Radius (Standard 200 m).
     Ohne Google über den Android-eigenen Proximity-Alert plus Standort-Updates alle 2 Min.
+- Beide Erkennungsarten lassen sich einzeln ein- und ausschalten, der FH-Standort lässt sich
+  löschen.
 - Ausgelöst wird höchstens **einmal am Tag** und nur aus dem Zustand *Neutral*.
 - **Ablauf**: Erinnerung antippen **oder** App öffnen → Auswahl *Einloggen* / *Ausloggen* /
   *Abbrechen* → ZEUS startet. Kein Widget. Die Einstellungen erreichst du über den Knopf

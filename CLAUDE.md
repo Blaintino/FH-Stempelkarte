@@ -48,6 +48,9 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   `addProximityAlert` + `requestLocationUpdates` (Fused, sonst Netzwerk, sonst GPS, alle
   2 Min, eigene Entfernungsprüfung) + `registerNetworkCallback(…, PendingIntent)`. Diese
   PendingIntents müssen `FLAG_MUTABLE` sein (System hängt Extras an).
+- Standort- und WLAN-Erkennung einzeln abschaltbar (`Config.useLocation`/`useWifi`, Wunsch des
+  Nutzers); überall `locationActive`/`wifiActive` prüfen, auch in den Receivern (alte
+  Registrierungen). `Detector.start` meldet zuerst alles ab. FH-Standort lässt sich löschen.
 - SSID: zuerst `NetworkCapabilities.transportInfo`, ab Android 12 oft geschwärzt, dann
   `WifiManager.connectionInfo` (braucht Standort-Recht, im Hintergrund „Immer erlauben“).
 - **Ablauf (Wunsch des Nutzers, 2026-10-14): kein Widget.** Meldung antippen oder App

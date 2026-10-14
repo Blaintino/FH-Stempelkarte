@@ -35,7 +35,9 @@ class DetectReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) = async {
         when (intent.action) {
             Detector.ACTION_PROXIMITY ->
-                if (intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)) {
+                if (intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false) &&
+                    Store(ctx).config.locationActive
+                ) {
                     Stempel.maybeTrigger(ctx, "Geofence")
                 }
             Detector.ACTION_LOCATION ->
@@ -44,7 +46,8 @@ class DetectReceiver : BroadcastReceiver() {
             Detector.ACTION_WIFI -> {
                 val net = IntentCompat.getParcelableExtra(intent, ConnectivityManager.EXTRA_NETWORK, Network::class.java)
                 val ssid = Detector.currentSsid(ctx, net)
-                if (Ssid.matches(ssid, Store(ctx).config.ssids)) Stempel.maybeTrigger(ctx, "WLAN $ssid")
+                val cfg = Store(ctx).config
+                if (cfg.wifiActive && Ssid.matches(ssid, cfg.ssids)) Stempel.maybeTrigger(ctx, "WLAN $ssid")
             }
         }
     }

@@ -43,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
@@ -257,6 +258,15 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
     }
 }
 
+/** Ein/Aus-Schalter für eine Erkennungsart. */
+@Composable
+private fun EnableRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(label, modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = onChange)
+    }
+}
+
 @Composable
 private fun WindowCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
     val ctx = LocalContext.current
@@ -313,7 +323,8 @@ private fun LocationCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
         if (Detector.hasFineLocation(ctx)) take()
     }
 
-    SectionCard("FH-Standort") {
+    SectionCard("FH-Standort (Geofence)") {
+        EnableRow("Erkennung über Standort", cfg.useLocation) { v -> save { it.copy(useLocation = v) } }
         Text(
             if (cfg.hasLocation) "%.5f, %.5f".format(Locale.ROOT, cfg.lat, cfg.lon) else "Nicht gesetzt",
         )
@@ -324,6 +335,9 @@ private fun LocationCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
                 permission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
             }
         }) { Text(if (locating) "Suche Standort…" else "Aktuellen Standort übernehmen") }
+        if (cfg.hasLocation) {
+            TextButton(onClick = { save { it.copy(lat = null, lon = null) } }) { Text("Standort löschen") }
+        }
         OutlinedTextField(
             value = radius,
             onValueChange = { v ->
@@ -343,6 +357,7 @@ private fun WifiCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
     var text by remember { mutableStateOf(cfg.ssids.joinToString(", ")) }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
     SectionCard("FH-WLAN") {
+        EnableRow("Erkennung über WLAN", cfg.useWifi) { v -> save { it.copy(useWifi = v) } }
         OutlinedTextField(
             value = text,
             onValueChange = { v ->

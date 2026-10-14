@@ -59,10 +59,11 @@ object Detector {
     fun start(ctx: Context, until: Long) {
         val cfg = Store(ctx).config
         val now = System.currentTimeMillis()
-        if (cfg.hasLocation && hasFineLocation(ctx)) {
+        // Erst alles abmelden: ausgeschaltete Erkennungsarten dürfen nicht weiterlaufen.
+        stop(ctx)
+        if (cfg.locationActive && hasFineLocation(ctx)) {
             val lm = ctx.getSystemService(LocationManager::class.java)
             val prox = pi(ctx, ACTION_PROXIMITY, 10)
-            runCatching { lm.removeProximityAlert(prox) }
             runCatching {
                 lm.addProximityAlert(cfg.lat!!, cfg.lon!!, cfg.radiusM.toFloat(), (until - now).coerceAtLeast(1), prox)
             }
@@ -70,10 +71,9 @@ object Detector {
                 runCatching { lm.requestLocationUpdates(p, LOCATION_INTERVAL_MS, 0f, pi(ctx, ACTION_LOCATION, 11)) }
             }
         }
-        if (cfg.ssids.isNotEmpty()) {
+        if (cfg.wifiActive) {
             val cm = ctx.getSystemService(ConnectivityManager::class.java)
             val wifi = pi(ctx, ACTION_WIFI, 12)
-            runCatching { cm.unregisterNetworkCallback(wifi) }
             runCatching {
                 cm.registerNetworkCallback(
                     NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(),
@@ -96,7 +96,7 @@ object Detector {
     fun checkNow(ctx: Context) {
         val cfg = Store(ctx).config
         val ssid = currentSsid(ctx)
-        if (Ssid.matches(ssid, cfg.ssids)) {
+        if (cfg.wifiActive && Ssid.matches(ssid, cfg.ssids)) {
             Stempel.maybeTrigger(ctx, "WLAN $ssid")
             return
         }
@@ -105,7 +105,7 @@ object Detector {
 
     fun checkLocation(ctx: Context, loc: Location) {
         val cfg = Store(ctx).config
-        if (!cfg.hasLocation) return
+        if (!cfg.locationActive) return
         val d = FloatArray(1)
         Location.distanceBetween(loc.latitude, loc.longitude, cfg.lat!!, cfg.lon!!, d)
         if (d[0] <= cfg.radiusM) Stempel.maybeTrigger(ctx, "Standort (${d[0].toInt()} m)")

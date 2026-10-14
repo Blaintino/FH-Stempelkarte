@@ -111,9 +111,9 @@ object Reliability {
         ) { Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS) }
 
         list += Check(
-            "FH-Standort oder FH-WLAN eingestellt",
-            cfg.hasLocation || cfg.ssids.isNotEmpty(),
-            "Mindestens eins von beiden, besser beides (auf dem Hauptbildschirm).",
+            "Erkennung eingerichtet",
+            cfg.locationActive || cfg.wifiActive,
+            "Mindestens eins eingeschaltet und eingerichtet: FH-Standort oder FH-WLAN (in den Einstellungen).",
         )
 
         list += Check(
