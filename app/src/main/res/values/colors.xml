@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Widget-Farben im Zustand „Neutral"; ab Android 12 aus den Systemfarben (values-v31). -->
-    <color name="widget_bg">#FFE8DEF8</color>
-    <color name="widget_fg">#FF1D192B</color>
-    <color name="widget_out">#FFC62828</color>
-    <color name="widget_in">#FF2E7D32</color>
     <color name="ic_launcher_bg">#FF2E7D32</color>
 </resources>

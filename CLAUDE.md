@@ -10,8 +10,8 @@ Stand 2026-10-14: kompiliert, Lint ohne echte Befunde (nur Versions-Hinweise,
 `InlinedApi` für die Alarm-Berechtigungs-Aktion – harmlos, wie in Quälgeist), 22 Unit-Tests
 grün (`TimeWindowTest`, `StateLogicTest`, `SsidTest`, `WallpaperLayoutTest`; Zeitzone fest
 `Europe/Berlin`). **Auf dem Gerät noch nicht getestet.** Der Nutzer installiert über
-Obtainium, nicht per USB/adb. Offen zu prüfen: Widget → Dialog → ZEUS startet und Hintergrund
-wechselt; WLAN- und Geofence-Auslösung im (vorgezogenen) Zeitfenster; nach Neustart neu
+Obtainium, nicht per USB/adb. Erstes Release `fhstempelkarte-v2` (CI grün, signiert). Offen zu prüfen: App-Start/Meldung →
+Auswahl → ZEUS startet und Hintergrund wechselt; WLAN- und Geofence-Auslösung im (vorgezogenen) Zeitfenster; nach Neustart neu
 geplante Alarme; ob Huawei den Sperrbildschirm-Hintergrund übernimmt.
 ZEUS-Paketname ist unbekannt (wird in der App aus den installierten Apps gewählt; Kandidaten
 mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
@@ -50,13 +50,15 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   PendingIntents müssen `FLAG_MUTABLE` sein (System hängt Extras an).
 - SSID: zuerst `NetworkCapabilities.transportInfo`, ab Android 12 oft geschwärzt, dann
   `WifiManager.connectionInfo` (braucht Standort-Recht, im Hintergrund „Immer erlauben“).
+- **Ablauf (Wunsch des Nutzers, 2026-10-14): kein Widget.** Meldung antippen oder App
+  öffnen → `ZeusActivity` (durchsichtiger Dialog, Launcher-Activity) mit *Einloggen* /
+  *Ausloggen* / *Abbrechen* / *Einstellungen* → ZEUS. `MainActivity` sind nur noch die
+  Einstellungen (nicht exportiert); ohne gewählte ZEUS-App springt der Start direkt dorthin.
 - Meldung: Kanal `einstempeln`, Kategorie `REMINDER`, nicht `ongoing`, `cancel` + `notify`
-  (Huawei Health), kein Vollbild-Intent. Knopf *ZEUS öffnen* = derselbe Dialog wie das Widget.
+  (Huawei Health), kein Vollbild-Intent, keine Knöpfe – Antippen öffnet die Auswahl.
 - Originalhintergrund wird nie vom System gelesen, sondern per Photo Picker gewählt und nach
   `files/original` kopiert. Ohne Original beim Abmelden **immer erst fragen**, bevor
   `WallpaperManager.clear()` läuft (`LogoutNoOriginalDialog`).
-- Widget mit klassischen `RemoteViews` (kein Glance). Launcher-Verknüpfung dynamisch
-  (`ShortcutManagerCompat`), weil statische `shortcuts.xml` die Debug-App-ID nicht kennt.
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
 
 ## Rahmenbedingungen

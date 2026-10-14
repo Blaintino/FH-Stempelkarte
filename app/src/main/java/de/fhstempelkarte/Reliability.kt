@@ -196,7 +196,7 @@ fun ReliabilityScreen(tick: Int, onBack: () -> Unit, contentPadding: PaddingValu
                         Text("Test", style = MaterialTheme.typography.titleMedium)
                         Text(
                             "Löst sofort aus wie an der FH: Hintergrund „Nicht eingeloggt“ und Meldung. " +
-                                "Zurück mit Anmelden oder Abmelden (Widget oder Hauptbildschirm).",
+                                "Zurück mit Anmelden oder Abmelden (Meldung antippen oder App öffnen).",
                         )
                         Button(onClick = {
                             AppScope.launch { Stempel.testTrigger(ctx) }

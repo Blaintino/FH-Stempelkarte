@@ -16,15 +16,16 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
   - **Standort**: FH-Position per „Aktuellen Standort übernehmen“, Radius (Standard 200 m).
     Ohne Google über den Android-eigenen Proximity-Alert plus Standort-Updates alle 2 Min.
 - Ausgelöst wird höchstens **einmal am Tag** und nur aus dem Zustand *Neutral*.
-- **ZEUS-Knopf**: Widget (Farbe zeigt den Zustand) und App-Verknüpfung. Ein Tipp öffnet
-  *Anmelden* / *Abmelden* / *Abbrechen*, danach startet ZEUS. Dieselben Knöpfe (ohne ZEUS)
-  stehen auf dem Hauptbildschirm.
+- **Ablauf**: Erinnerung antippen **oder** App öffnen → Auswahl *Einloggen* / *Ausloggen* /
+  *Abbrechen* → ZEUS startet. Kein Widget. Die Einstellungen erreichst du über den Knopf
+  *Einstellungen* in der Auswahl (beim allerersten Start, solange keine ZEUS-App gewählt ist,
+  direkt). Dort gibt es dieselben Knöpfe noch einmal ohne ZEUS-Start.
 - **Keine Erinnerung zum Abmelden**: Der grüne Hintergrund ist die Erinnerung. *Eingeloggt*
   bleibt über Nacht, bis du abmeldest; solange wird morgens nichts ausgelöst.
 - **Hintergründe**: rot/grün mit großem Text, Farbe wählbar oder eigenes Bild.
   Start- und/oder Sperrbildschirm. Dein **Originalbild wählst du einmal** in der App aus
   (Android lässt Apps den aktuellen Hintergrund nicht zuverlässig auslesen).
-- **Prüfliste** mit Links in die Systemeinstellungen und *Test auslösen*.
+- **Prüfliste** (in den Einstellungen) mit Links in die Systemeinstellungen und *Test auslösen*.
 
 Hinweis: Für den pünktlichen Start nutzt die App einen Wecker-Alarm. Deshalb zeigt Android
 für die Startzeit des Fensters (7:00) ein Wecker-Symbol bzw. „nächster Wecker“ an.
@@ -36,7 +37,6 @@ für die Startzeit des Fensters (7:00) ein Wecker-Symbol bzw. „nächster Wecke
 2. ZEUS-App wählen (Liste aller Apps, Kandidaten mit „zeus“/„isgus“ stehen oben).
 3. Originalhintergrund wählen.
 4. An der FH: *Aktuelles WLAN übernehmen* und/oder *Aktuellen Standort übernehmen*.
-5. Widget anlegen: Startbildschirm lange drücken → Widgets → FH Stempelkarte.
 
 ## Installieren und aktualisieren
 
@@ -75,9 +75,9 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `Receivers.kt` | Fenster-, Erkennungs- und Boot-Receiver |
 | `Wallpapers.kt` | Hintergrund setzen, Bilder erzeugen/importieren |
 | `Notifier.kt` | Meldung „Einstempeln nicht vergessen“ |
-| `Zeus.kt` | ZEUS starten, Widget, Verknüpfung, Dialog-Activity |
+| `Zeus.kt` | ZEUS starten, Auswahl-Dialog (Startpunkt der App) |
 | `Store.kt` | SharedPreferences (Einstellungen + Zustand) |
-| `Ui.kt`, `Reliability.kt` | Hauptbildschirm, Einstellungen, Prüfliste |
+| `Ui.kt`, `Reliability.kt` | Einstellungen, Prüfliste |
 
 ## Lizenz
 

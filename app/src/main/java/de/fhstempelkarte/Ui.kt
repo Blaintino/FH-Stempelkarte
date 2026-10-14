@@ -161,7 +161,7 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { Text("FH Stempelkarte", style = MaterialTheme.typography.headlineSmall) }
+        item { Text("FH Stempelkarte – Einstellungen", style = MaterialTheme.typography.headlineSmall) }
 
         item {
             val color = when (state) {
@@ -178,10 +178,10 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
                         Text("Zuletzt ausgelöst: $it", color = fg, style = MaterialTheme.typography.bodySmall)
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(enabled = !busy, onClick = { change(StempelState.EINGELOGGT) }) { Text("Anmelden") }
+                        Button(enabled = !busy, onClick = { change(StempelState.EINGELOGGT) }) { Text("Einloggen") }
                         OutlinedButton(enabled = !busy, onClick = {
                             if (hasOriginal) change(StempelState.NEUTRAL) else askClear = true
-                        }) { Text("Abmelden", color = fg) }
+                        }) { Text("Ausloggen", color = fg) }
                     }
                 }
             }
@@ -219,19 +219,7 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
                         else -> "$label (${cfg.zeusPackage})"
                     },
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { pickZeus = true }) { Text("App wählen…") }
-                    OutlinedButton(onClick = {
-                        if (!Zeus.requestPinShortcut(ctx)) {
-                            Toast.makeText(ctx, "Launcher unterstützt das nicht – Widget verwenden.", Toast.LENGTH_LONG).show()
-                        }
-                    }) { Text("Verknüpfung anlegen") }
-                }
-                Text(
-                    "Widget: Startbildschirm lange drücken → Widgets → FH Stempelkarte. " +
-                        "Die Verknüpfung gibt es auch beim langen Druck auf das App-Symbol.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                OutlinedButton(onClick = { pickZeus = true }) { Text("App wählen…") }
             }
         }
         item { WallpaperCard(cfg, hasOriginal, ::save) }

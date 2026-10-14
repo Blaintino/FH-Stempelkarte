@@ -57,7 +57,6 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action !in HANDLED) return
         async {
             if (Scheduler.planAll(ctx)) Detector.checkNow(ctx)
-            runCatching { ZeusWidget.updateAll(ctx) }
         }
     }
 

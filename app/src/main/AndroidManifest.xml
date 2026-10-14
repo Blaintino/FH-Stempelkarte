@@ -36,36 +36,25 @@
         android:label="${appLabel}"
         android:theme="@style/Theme.Stempelkarte">
 
+        <!-- Einstellungen; erreichbar über „Einstellungen“ im Auswahl-Dialog. -->
         <activity
             android:name=".MainActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <!-- Startpunkt: Anmelden/Abmelden-Auswahl beim App-Start und aus der Meldung, dann ZEUS. -->
+        <activity
+            android:name=".ZeusActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:noHistory="true"
+            android:taskAffinity="de.fhstempelkarte.zeus"
+            android:theme="@style/Theme.Stempelkarte.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Anmelden/Abmelden-Dialog aus Widget, Verknüpfung und Meldung. -->
-        <activity
-            android:name=".ZeusActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:noHistory="true"
-            android:taskAffinity="de.fhstempelkarte.zeus"
-            android:theme="@style/Theme.Stempelkarte.Translucent" />
-
-        <receiver
-            android:name=".ZeusWidget"
-            android:exported="false"
-            android:label="@string/widget_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_zeus_info" />
-        </receiver>
 
         <receiver
             android:name=".WindowReceiver"

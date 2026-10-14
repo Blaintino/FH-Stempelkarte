@@ -24,7 +24,8 @@ object Notifier {
         ctx.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
-    fun zeusDialogIntent(ctx: Context): PendingIntent = PendingIntent.getActivity(
+    /** Antippen führt zur Auswahl Anmelden/Abmelden, danach ZEUS. */
+    private fun choiceIntent(ctx: Context): PendingIntent = PendingIntent.getActivity(
         ctx, 1,
         Intent(ctx, ZeusActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
@@ -34,17 +35,13 @@ object Notifier {
     /**
      * Eine Meldung, keine Wiederholung (der Hintergrund ist die eigentliche Erinnerung).
      * Nicht `ongoing` und `cancel` + `notify`: Huawei Health spiegelt sonst oft nicht.
-     * Kein Vollbild-Intent.
+     * Kein Vollbild-Intent, keine Knöpfe: Antippen öffnet die Auswahl.
      */
     @SuppressLint("MissingPermission")
     fun show(ctx: Context) {
         ensureChannel(ctx)
         val nm = NotificationManagerCompat.from(ctx)
         if (!nm.areNotificationsEnabled()) return
-        val open = PendingIntent.getActivity(
-            ctx, 0, Intent(ctx, MainActivity::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
         val n = NotificationCompat.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_stempel)
             .setContentTitle("Einstempeln nicht vergessen")
@@ -55,8 +52,7 @@ object Notifier {
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(false)
             .setOngoing(false)
-            .setContentIntent(open)
-            .addAction(0, "ZEUS öffnen", zeusDialogIntent(ctx))
+            .setContentIntent(choiceIntent(ctx))
             .build()
         nm.cancel(ID)
         nm.notify(ID, n)

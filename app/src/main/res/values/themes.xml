@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Stempelkarte" parent="android:Theme.Material.Light.NoActionBar" />
-    <!-- ZEUS-Dialog aus Widget/Verknüpfung: nur der Dialog, Homescreen bleibt sichtbar. -->
+    <!-- Auswahl beim App-Start und aus der Meldung: nur der Dialog, Homescreen bleibt sichtbar. -->
     <style name="Theme.Stempelkarte.Translucent" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

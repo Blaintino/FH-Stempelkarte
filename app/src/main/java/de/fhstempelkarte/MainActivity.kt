@@ -12,7 +12,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         Notifier.ensureChannel(this)
-        Zeus.publishShortcut(this)
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“).
         val ctx = applicationContext
         AppScope.launch { if (Scheduler.planAll(ctx)) Detector.checkNow(ctx) }
