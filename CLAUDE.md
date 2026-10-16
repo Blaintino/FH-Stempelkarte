@@ -70,6 +70,14 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   Hintergrund-Erkennung griff nicht. Deshalb: `EventLog` (Protokoll in der Prüfliste,
   `files/protokoll.txt`) an allen Hintergrund-Stellen und im Fenster eine 5-Min-Prüfung per
   Alarm (`Scheduler.ACTION_POLL` → `Detector.checkNow`). Protokoll beibehalten.
+  Befund per adb (Samsung S26, Android 17): alle Rechte erteilt (inkl. Hintergrund-Standort,
+  exakte Alarme), Akku-Ausnahme aktiv, Standby-Bucket „exempted“; der 7:00-Alarm kam
+  pünktlich. Das Handy verband sich aber erst um 7:23:54 mit eduroam (beim Entsperren),
+  14 s später öffnete der Nutzer die App. Samsung verbindet WLAN bei ausgeschaltetem
+  Bildschirm oft spät → WLAN allein reicht nicht, Standort-Erkennung als zweiter Auslöser
+  wichtig. Hintergrund-Standort wurde an dem Morgen nicht abgefragt (Standort-Erkennung
+  vermutlich aus/kein FH-Standort). ZEUS-Paket auf dem Gerät: `de.isgus.zeusmobile`.
+  USB/adb ist inzwischen möglich (Gerät `SM-S948B`).
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
 
 ## Rahmenbedingungen
