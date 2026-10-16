@@ -18,6 +18,9 @@ data class Config(
     val zeusPackage: String? = null,
     val colorOut: Int = COLOR_OUT,
     val colorIn: Int = COLOR_IN,
+    /** Eigene Farbe für den Sperrbildschirm; null = wie Startbildschirm. */
+    val colorOutLock: Int? = null,
+    val colorInLock: Int? = null,
     val onHome: Boolean = true,
     val onLock: Boolean = true,
 ) {
@@ -90,6 +93,8 @@ class Store(ctx: Context) {
             zeusPackage = p.getString("zeus", null),
             colorOut = p.getInt("colorOut", Config.COLOR_OUT),
             colorIn = p.getInt("colorIn", Config.COLOR_IN),
+            colorOutLock = if (p.contains("colorOutLock")) p.getInt("colorOutLock", 0) else null,
+            colorInLock = if (p.contains("colorInLock")) p.getInt("colorInLock", 0) else null,
             onHome = p.getBoolean("onHome", true),
             onLock = p.getBoolean("onLock", true),
         )
@@ -106,6 +111,8 @@ class Store(ctx: Context) {
             putString("zeus", c.zeusPackage)
             putInt("colorOut", c.colorOut)
             putInt("colorIn", c.colorIn)
+            c.colorOutLock?.let { putInt("colorOutLock", it) } ?: remove("colorOutLock")
+            c.colorInLock?.let { putInt("colorInLock", it) } ?: remove("colorInLock")
             putBoolean("onHome", c.onHome)
             putBoolean("onLock", c.onLock)
         }

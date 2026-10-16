@@ -27,8 +27,9 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
 - **Drei Hintergründe** in den Einstellungen, jeweils mit Vorschau: *Normal* (dein eigenes
   Bild, einmal auswählen – Android lässt Apps den aktuellen Hintergrund nicht zuverlässig
   auslesen), *Einloggen-Erinnerung* und *Eingeloggt* (Farbe mit großem Text oder eigenes
-  Bild). Für Start- und/oder Sperrbildschirm. Änderungen am gerade aktiven Zustand werden
-  sofort übernommen.
+  Bild). Für Start- und/oder Sperrbildschirm, auf Wunsch mit eigenem Bild bzw. eigener Farbe
+  für den Sperrbildschirm (sonst wie Startbildschirm). Änderungen am gerade aktiven Zustand
+  werden sofort übernommen.
 - **Prüfliste** (in den Einstellungen) mit Links in die Systemeinstellungen und *Test auslösen*.
 
 Hinweis: Für den pünktlichen Start nutzt die App einen Wecker-Alarm. Deshalb zeigt Android
@@ -73,6 +74,7 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `StateLogic.kt` | Zustände und Auslöse-Regel (rein, getestet) |
 | `Ssid.kt` | SSID-Vergleich (rein, getestet) |
 | `WallpaperLayout.kt` | Textanordnung der erzeugten Bilder (rein, getestet) |
+| `WallpaperPlan.kt` | Welcher Hintergrund auf Start-/Sperrbildschirm (rein, getestet) |
 | `Stempel.kt` | `setState` – einziger Ort für Zustandswechsel |
 | `Scheduler.kt` | Alarme für Fensterbeginn/-ende, startet/stoppt Erkennung |
 | `Detector.kt` | Geofence, Standort-Updates, WLAN-Callback, SSID lesen |

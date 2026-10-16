@@ -25,30 +25,52 @@ object Wallpapers {
     const val TEXT_OUT = "NICHT\nEINGELOGGT"
     const val TEXT_IN = "EINGELOGGT"
 
-    fun originalFile(ctx: Context) = File(ctx.filesDir, "original")
-    fun customFile(ctx: Context, state: StempelState) = File(ctx.filesDir, "bild_${state.name.lowercase()}")
-    fun hasOriginal(ctx: Context) = originalFile(ctx).length() > 0
+    /** Bilddateien: Startbildschirm unter den alten Namen, Sperrbildschirm mit Endung `_sperre`. */
+    private fun suffix(screen: Screen) = if (screen == Screen.LOCK) "_sperre" else ""
 
-    /** Bilddatei des Zustands: `NEUTRAL` = Original, sonst eigenes Bild statt Farbe. */
-    fun imageFile(ctx: Context, state: StempelState) =
-        if (state == StempelState.NEUTRAL) originalFile(ctx) else customFile(ctx, state)
+    fun originalFile(ctx: Context, screen: Screen = Screen.HOME) = File(ctx.filesDir, "original" + suffix(screen))
+
+    /** Bilddatei für (Zustand, Bildschirm): `NEUTRAL` = Original, sonst eigenes Bild statt Farbe. */
+    fun imageFile(ctx: Context, state: StempelState, screen: Screen): File =
+        if (state == StempelState.NEUTRAL) {
+            originalFile(ctx, screen)
+        } else {
+            File(ctx.filesDir, "bild_${state.name.lowercase()}" + suffix(screen))
+        }
+
+    fun hasImage(ctx: Context, state: StempelState, screen: Screen) = imageFile(ctx, state, screen).length() > 0
+
+    fun source(ctx: Context, cfg: Config, state: StempelState, screen: Screen): WallpaperSource =
+        WallpaperPlan.source(cfg, state, screen) { hasImage(ctx, state, it) }
+
+    private fun enabledScreens(cfg: Config) =
+        listOfNotNull(Screen.HOME.takeIf { cfg.onHome }, Screen.LOCK.takeIf { cfg.onLock })
+
+    /** Kann Ausloggen für alle eingeschalteten Bildschirme den normalen Hintergrund wiederherstellen? */
+    fun hasOriginal(ctx: Context): Boolean {
+        val cfg = Store(ctx).config
+        return enabledScreens(cfg).none { source(ctx, cfg, StempelState.NEUTRAL, it) == WallpaperSource.Missing }
+    }
 
     /** Kleine Vorschau (Höhe [height] px): gewähltes Bild oder erzeugtes Farbbild; null ohne Normal-Bild. */
-    fun preview(ctx: Context, state: StempelState, height: Int): Bitmap? {
-        val f = imageFile(ctx, state)
-        if (f.length() > 0) {
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeFile(f.path, bounds)
-            var sample = 1
-            while (bounds.outHeight / (sample * 2) >= height) sample *= 2
-            return BitmapFactory.decodeFile(f.path, BitmapFactory.Options().apply { inSampleSize = sample })
-        }
-        if (state == StempelState.NEUTRAL) return null
+    fun preview(ctx: Context, state: StempelState, screen: Screen, height: Int): Bitmap? {
         val cfg = Store(ctx).config
-        val (w, h) = screenSize(ctx)
-        val pw = (height * w.toFloat() / h).toInt().coerceAtLeast(1)
-        val out = state == StempelState.NICHT_EINGELOGGT
-        return render(pw, height, if (out) cfg.colorOut else cfg.colorIn, if (out) TEXT_OUT else TEXT_IN)
+        return when (val src = source(ctx, cfg, state, screen)) {
+            WallpaperSource.Missing -> null
+            is WallpaperSource.Image -> {
+                val f = imageFile(ctx, state, src.screen)
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(f.path, bounds)
+                var sample = 1
+                while (bounds.outHeight / (sample * 2) >= height) sample *= 2
+                BitmapFactory.decodeFile(f.path, BitmapFactory.Options().apply { inSampleSize = sample })
+            }
+            is WallpaperSource.Generated -> {
+                val (w, h) = screenSize(ctx)
+                val pw = (height * w.toFloat() / h).toInt().coerceAtLeast(1)
+                render(pw, height, src.color, text(state))
+            }
+        }
     }
 
     /** Kopiert ein gewähltes Bild (Photo Picker) in den internen Speicher. */
@@ -61,34 +83,38 @@ object Wallpapers {
         tmp.renameTo(target)
     }.getOrDefault(false)
 
-    private fun flags(cfg: Config): Int =
-        (if (cfg.onHome) WallpaperManager.FLAG_SYSTEM else 0) or
-            (if (cfg.onLock) WallpaperManager.FLAG_LOCK else 0)
+    private fun text(state: StempelState) = if (state == StempelState.EINGELOGGT) TEXT_IN else TEXT_OUT
 
-    /** Setzt den Hintergrund für [state]. Blockiert ~1 s – nicht im Hauptthread. */
+    private fun flag(screen: Screen) =
+        if (screen == Screen.HOME) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
+
+    /**
+     * Setzt den Hintergrund für [state] auf Start- und/oder Sperrbildschirm. Blockiert ~1 s –
+     * nicht im Hauptthread. Gleiche Quelle für beide: ein Aufruf mit beiden Flags. Sonst erst
+     * Start, dann Sperre (Start allein setzen kann eine geteilte Sperre mitändern).
+     */
     fun apply(ctx: Context, state: StempelState, clearIfNoOriginal: Boolean = false): Result {
         val cfg = Store(ctx).config
-        val which = flags(cfg)
-        if (which == 0) return Result.OK
+        val screens = enabledScreens(cfg)
+        if (screens.isEmpty()) return Result.OK
+        val sources = screens.associateWith { source(ctx, cfg, state, it) }
+        if (!clearIfNoOriginal && WallpaperSource.Missing in sources.values) return Result.NO_ORIGINAL
         val wm = WallpaperManager.getInstance(ctx)
+        val groups: List<Pair<WallpaperSource, Int>> =
+            if (sources.values.distinct().size == 1) {
+                listOf(sources.values.first() to screens.fold(0) { acc, s -> acc or flag(s) })
+            } else {
+                screens.map { sources.getValue(it) to flag(it) }
+            }
         return runCatching {
-            when (state) {
-                StempelState.NEUTRAL -> {
-                    val f = originalFile(ctx)
-                    when {
-                        f.length() > 0 -> f.inputStream().use { wm.setStream(it, null, true, which) }
-                        clearIfNoOriginal -> wm.clear(which)
-                        else -> return Result.NO_ORIGINAL
-                    }
-                }
-                else -> {
-                    val custom = customFile(ctx, state)
-                    if (custom.length() > 0) {
-                        custom.inputStream().use { wm.setStream(it, null, true, which) }
-                    } else {
+            for ((src, which) in groups) {
+                when (src) {
+                    WallpaperSource.Missing -> wm.clear(which)
+                    is WallpaperSource.Image ->
+                        imageFile(ctx, state, src.screen).inputStream().use { wm.setStream(it, null, true, which) }
+                    is WallpaperSource.Generated -> {
                         val (w, h) = screenSize(ctx)
-                        val out = state == StempelState.NICHT_EINGELOGGT
-                        val bmp = render(w, h, if (out) cfg.colorOut else cfg.colorIn, if (out) TEXT_OUT else TEXT_IN)
+                        val bmp = render(w, h, src.color, text(state))
                         wm.setBitmap(bmp, null, true, which)
                         bmp.recycle()
                     }

@@ -66,6 +66,13 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   und *Eingeloggt* (Farbe oder eigenes Bild `files/bild_<zustand>`), mit Vorschau
   (`Wallpapers.preview`). Änderung am aktiven Zustand wird sofort angewendet (Wunsch des
   Nutzers: alle drei in der App einstellbar).
+- Start- und Sperrbildschirm getrennt (Wunsch des Nutzers, 2026-10-16): pro Zustand eigenes
+  Bild für die Sperre (`files/original_sperre`, `files/bild_<zustand>_sperre`) bzw. eigene
+  Farbe (`Config.colorOutLock`/`colorInLock`, null = wie Start). Ohne Eigenes übernimmt die
+  Sperre den Startbildschirm (`WallpaperPlan.source`, `WallpaperPlanTest`); die Dateien des
+  Startbildschirms behalten die alten Namen. `Wallpapers.apply`: gleiche Quelle → ein Aufruf
+  mit beiden Flags, sonst erst `FLAG_SYSTEM`, dann `FLAG_LOCK`. `hasOriginal` prüft alle
+  eingeschalteten Bildschirme.
 - Erster Gerätetest 2026-10-16: Meldung kam erst beim Öffnen der App, die
   Hintergrund-Erkennung griff nicht. Deshalb: `EventLog` (Protokoll in der Prüfliste,
   `files/protokoll.txt`) an allen Hintergrund-Stellen und im Fenster eine 5-Min-Prüfung per
