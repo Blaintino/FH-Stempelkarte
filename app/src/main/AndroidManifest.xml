@@ -26,8 +26,6 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
-        <!-- Für den Knopf „App-Start verwalten" in der Prüfliste. -->
-        <package android:name="com.huawei.systemmanager" />
     </queries>
 
     <application

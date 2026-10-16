@@ -26,7 +26,13 @@ private fun BroadcastReceiver.async(block: () -> Unit) {
 /** Fensterbeginn/-ende: neu planen, Erkennung starten oder stoppen. */
 class WindowReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) = async {
-        if (Scheduler.planAll(ctx)) Detector.checkNow(ctx)
+        val source = when (intent.action) {
+            Scheduler.ACTION_START -> "Alarm Fensterbeginn"
+            Scheduler.ACTION_END -> "Alarm Fensterende"
+            else -> "Alarm 5-Min-Prüfung"
+        }
+        if (intent.action != Scheduler.ACTION_POLL) EventLog.add(ctx, source)
+        if (Scheduler.planAll(ctx)) Detector.checkNow(ctx, source)
     }
 }
 
@@ -34,18 +40,21 @@ class WindowReceiver : BroadcastReceiver() {
 class DetectReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) = async {
         when (intent.action) {
-            Detector.ACTION_PROXIMITY ->
-                if (intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false) &&
-                    Store(ctx).config.locationActive
-                ) {
-                    Stempel.maybeTrigger(ctx, "Geofence")
-                }
+            Detector.ACTION_PROXIMITY -> {
+                val entering = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)
+                EventLog.add(ctx, "Geofence: " + if (entering) "betreten" else "verlassen")
+                if (entering && Store(ctx).config.locationActive) Stempel.maybeTrigger(ctx, "Geofence")
+            }
             Detector.ACTION_LOCATION ->
                 IntentCompat.getParcelableExtra(intent, LocationManager.KEY_LOCATION_CHANGED, Location::class.java)
-                    ?.let { Detector.checkLocation(ctx, it) }
+                    ?.let { loc ->
+                        val d = Detector.checkLocation(ctx, loc)
+                        EventLog.add(ctx, "Standort-Update: ${d ?: "?"} m (±${loc.accuracy.toInt()} m, ${loc.provider})")
+                    }
             Detector.ACTION_WIFI -> {
                 val net = IntentCompat.getParcelableExtra(intent, ConnectivityManager.EXTRA_NETWORK, Network::class.java)
                 val ssid = Detector.currentSsid(ctx, net)
+                EventLog.add(ctx, "WLAN-Meldung: " + (ssid?.let { "„$it“" } ?: "Name NICHT lesbar"))
                 val cfg = Store(ctx).config
                 if (cfg.wifiActive && Ssid.matches(ssid, cfg.ssids)) Stempel.maybeTrigger(ctx, "WLAN $ssid")
             }
@@ -59,6 +68,7 @@ class BootReceiver : BroadcastReceiver() {
         // Exportiert (für die System-Broadcasts) – fremde Intents ignorieren.
         if (intent.action !in HANDLED) return
         async {
+            EventLog.add(ctx, "System: ${intent.action?.substringAfterLast('.')}")
             if (Scheduler.planAll(ctx)) Detector.checkNow(ctx)
         }
     }

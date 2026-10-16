@@ -15,6 +15,7 @@ object Stempel {
      */
     fun setState(ctx: Context, state: StempelState, clearIfNoOriginal: Boolean = false): Wallpapers.Result {
         val store = Store(ctx)
+        if (store.state != state) EventLog.add(ctx, "Zustand: ${store.state.label} → ${state.label}")
         store.state = state
         if (state == StempelState.NICHT_EINGELOGGT) {
             runCatching { Notifier.show(ctx) }
@@ -35,6 +36,7 @@ object Stempel {
         }
         store.lastTriggerDay = now.toLocalDate()
         store.lastTriggerInfo = "${now.format(INFO_FORMAT)} · $reason"
+        EventLog.add(ctx, "AUSGELÖST: $reason")
         setState(ctx, StempelState.NICHT_EINGELOGGT)
         return true
     }

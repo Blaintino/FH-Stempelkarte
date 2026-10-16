@@ -41,7 +41,10 @@ object Notifier {
     fun show(ctx: Context) {
         ensureChannel(ctx)
         val nm = NotificationManagerCompat.from(ctx)
-        if (!nm.areNotificationsEnabled()) return
+        if (!nm.areNotificationsEnabled()) {
+            EventLog.add(ctx, "Meldung NICHT gezeigt: Benachrichtigungen aus")
+            return
+        }
         val n = NotificationCompat.Builder(ctx, CHANNEL)
             .setSmallIcon(R.drawable.ic_stempel)
             .setContentTitle("Einstempeln nicht vergessen")

@@ -55,32 +55,45 @@ object Detector {
             .firstOrNull { it in all && runCatching { lm.isProviderEnabled(it) }.getOrDefault(false) }
     }
 
+    /** Meldet die eingeschalteten Erkennungsarten an; Rückgabe ist eine Zeile fürs Protokoll. */
     @SuppressLint("MissingPermission")
-    fun start(ctx: Context, until: Long) {
+    fun start(ctx: Context, until: Long): String {
         val cfg = Store(ctx).config
         val now = System.currentTimeMillis()
         // Erst alles abmelden: ausgeschaltete Erkennungsarten dürfen nicht weiterlaufen.
         stop(ctx)
-        if (cfg.locationActive && hasFineLocation(ctx)) {
-            val lm = ctx.getSystemService(LocationManager::class.java)
-            val prox = pi(ctx, ACTION_PROXIMITY, 10)
-            runCatching {
-                lm.addProximityAlert(cfg.lat!!, cfg.lon!!, cfg.radiusM.toFloat(), (until - now).coerceAtLeast(1), prox)
-            }
-            bestProvider(lm)?.let { p ->
-                runCatching { lm.requestLocationUpdates(p, LOCATION_INTERVAL_MS, 0f, pi(ctx, ACTION_LOCATION, 11)) }
+        val loc = when {
+            !cfg.locationActive -> "Standort aus"
+            !hasFineLocation(ctx) -> "Standort: KEIN Recht"
+            else -> {
+                val lm = ctx.getSystemService(LocationManager::class.java)
+                val prox = pi(ctx, ACTION_PROXIMITY, 10)
+                val geo = runCatching {
+                    lm.addProximityAlert(cfg.lat!!, cfg.lon!!, cfg.radiusM.toFloat(), (until - now).coerceAtLeast(1), prox)
+                }
+                val provider = bestProvider(lm)
+                val upd = provider?.let { p ->
+                    runCatching { lm.requestLocationUpdates(p, LOCATION_INTERVAL_MS, 0f, pi(ctx, ACTION_LOCATION, 11)) }
+                }
+                "Geofence " + (if (geo.isSuccess) "ok" else "FEHLER ${geo.exceptionOrNull()?.javaClass?.simpleName}") +
+                    ", Updates über " + (provider ?: "KEINEN Anbieter") +
+                    (if (upd?.isFailure == true) " (FEHLER)" else "") +
+                    (if (hasBackgroundLocation(ctx)) "" else ", OHNE Hintergrund-Standort")
             }
         }
-        if (cfg.wifiActive) {
+        val wifi = if (!cfg.wifiActive) {
+            "WLAN aus"
+        } else {
             val cm = ctx.getSystemService(ConnectivityManager::class.java)
-            val wifi = pi(ctx, ACTION_WIFI, 12)
-            runCatching {
+            val r = runCatching {
                 cm.registerNetworkCallback(
                     NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(),
-                    wifi,
+                    pi(ctx, ACTION_WIFI, 12),
                 )
             }
+            "WLAN-Meldung " + if (r.isSuccess) "ok" else "FEHLER ${r.exceptionOrNull()?.javaClass?.simpleName}"
         }
+        return "$loc; $wifi"
     }
 
     /** Zum Fensterende oder nach dem Auslösen: alles abmelden (Akku). */
@@ -93,22 +106,51 @@ object Detector {
     }
 
     /** Beim Fensterstart: Schon im FH-WLAN oder (frischer Standort) schon dort? Blockiert. */
-    fun checkNow(ctx: Context) {
+    fun checkNow(ctx: Context, source: String = "Prüfung") {
         val cfg = Store(ctx).config
-        val ssid = currentSsid(ctx)
-        if (cfg.wifiActive && Ssid.matches(ssid, cfg.ssids)) {
-            Stempel.maybeTrigger(ctx, "WLAN $ssid")
+        val parts = mutableListOf<String>()
+        if (cfg.wifiActive) {
+            val ssid = currentSsid(ctx)
+            parts += when {
+                ssid != null -> "WLAN „$ssid“"
+                wifiConnected(ctx) -> "WLAN verbunden, Name NICHT lesbar"
+                else -> "kein WLAN"
+            }
+            if (Ssid.matches(ssid, cfg.ssids)) {
+                EventLog.add(ctx, "$source: ${parts.joinToString()}")
+                Stempel.maybeTrigger(ctx, "WLAN $ssid")
+                return
+            }
+        }
+        if (cfg.locationActive) {
+            val loc = lastFreshLocation(ctx)
+            parts += if (loc == null) "kein frischer Standort" else "Standort ${distanceTo(cfg, loc)} m (±${loc.accuracy.toInt()} m)"
+            EventLog.add(ctx, "$source: ${parts.joinToString()}")
+            loc?.let { checkLocation(ctx, it) }
             return
         }
-        lastFreshLocation(ctx)?.let { checkLocation(ctx, it) }
+        EventLog.add(ctx, "$source: ${parts.joinToString()}")
     }
 
-    fun checkLocation(ctx: Context, loc: Location) {
-        val cfg = Store(ctx).config
-        if (!cfg.locationActive) return
+    private fun distanceTo(cfg: Config, loc: Location): Int {
         val d = FloatArray(1)
         Location.distanceBetween(loc.latitude, loc.longitude, cfg.lat!!, cfg.lon!!, d)
-        if (d[0] <= cfg.radiusM) Stempel.maybeTrigger(ctx, "Standort (${d[0].toInt()} m)")
+        return d[0].toInt()
+    }
+
+    /** Gibt die Entfernung zur FH in Metern zurück (null, wenn Standort-Erkennung aus). */
+    fun checkLocation(ctx: Context, loc: Location): Int? {
+        val cfg = Store(ctx).config
+        if (!cfg.locationActive) return null
+        val d = distanceTo(cfg, loc)
+        if (d <= cfg.radiusM) Stempel.maybeTrigger(ctx, "Standort ($d m)")
+        return d
+    }
+
+    fun wifiConnected(ctx: Context): Boolean {
+        val cm = ctx.getSystemService(ConnectivityManager::class.java)
+        val caps = cm.activeNetwork?.let { cm.getNetworkCapabilities(it) } ?: return false
+        return caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
     }
 
     @SuppressLint("MissingPermission")

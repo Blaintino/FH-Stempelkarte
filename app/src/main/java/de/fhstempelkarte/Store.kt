@@ -69,6 +69,11 @@ class Store(ctx: Context) {
         get() = p.getLong(K_DETECTING, 0)
         set(v) = put { putLong(K_DETECTING, v) }
 
+    /** Zuletzt geplanter Fensterbeginn, nur damit das Protokoll Änderungen vermerkt. */
+    var plannedStart: Long
+        get() = p.getLong("plannedStart", 0)
+        set(v) = put { putLong("plannedStart", v) }
+
     var config: Config
         get() = Config(
             window = WindowConfig(

@@ -66,6 +66,10 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   und *Eingeloggt* (Farbe oder eigenes Bild `files/bild_<zustand>`), mit Vorschau
   (`Wallpapers.preview`). Änderung am aktiven Zustand wird sofort angewendet (Wunsch des
   Nutzers: alle drei in der App einstellbar).
+- Erster Gerätetest 2026-10-16: Meldung kam erst beim Öffnen der App, die
+  Hintergrund-Erkennung griff nicht. Deshalb: `EventLog` (Protokoll in der Prüfliste,
+  `files/protokoll.txt`) an allen Hintergrund-Stellen und im Fenster eine 5-Min-Prüfung per
+  Alarm (`Scheduler.ACTION_POLL` → `Detector.checkNow`). Protokoll beibehalten.
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
 
 ## Rahmenbedingungen
@@ -73,7 +77,8 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 - Nur lokal: keine Google-Dienste, kein Netzwerk, keine Tracker, keine Konten.
 - Abhängigkeiten nur Compose, Core-KTX, Activity-Compose, Coroutines.
 - Oberfläche und Texte deutsch. Öffentliches Repo, GPL-3.0.
-- Privater Gebrauch (`USE_EXACT_ALARM` gesetzt). Handy: Huawei.
+- Privater Gebrauch (`USE_EXACT_ALARM` gesetzt). Handy: **Samsung Galaxy S26** (nicht Huawei –
+  der ursprüngliche Auftrag sprach fälschlich von Huawei; Huawei Health/Band gibt es trotzdem).
 
 ## Mögliche nächste Schritte (nur auf Nachfrage)
 

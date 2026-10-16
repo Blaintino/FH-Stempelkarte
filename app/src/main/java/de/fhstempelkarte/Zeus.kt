@@ -67,7 +67,7 @@ class ZeusActivity : ComponentActivity() {
         Notifier.ensureChannel(this)
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“) bei jedem App-Start.
         val app = applicationContext
-        AppScope.launch { if (Scheduler.planAll(app)) Detector.checkNow(app) }
+        AppScope.launch { if (Scheduler.planAll(app)) Detector.checkNow(app, "App geöffnet") }
         if (Store(this).config.zeusPackage == null) {
             openSettings(this)
             finish()

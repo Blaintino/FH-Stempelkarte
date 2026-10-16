@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         Notifier.ensureChannel(this)
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“).
         val ctx = applicationContext
-        AppScope.launch { if (Scheduler.planAll(ctx)) Detector.checkNow(ctx) }
+        AppScope.launch { if (Scheduler.planAll(ctx)) Detector.checkNow(ctx, "App geöffnet") }
         setContent {
             AppTheme {
                 App()
