@@ -389,13 +389,6 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
     val ctx = LocalContext.current
     var target by remember { mutableStateOf<Pair<StempelState, Screen>?>(null) }
     var refresh by remember { mutableIntStateOf(0) }
-    var chosen by remember { mutableStateOf(Screen.HOME) }
-    // Nur ein Bildschirm eingeschaltet: den bearbeiten, Auswahl ausblenden.
-    val screen = when {
-        cfg.onHome && !cfg.onLock -> Screen.HOME
-        cfg.onLock && !cfg.onHome -> Screen.LOCK
-        else -> chosen
-    }
 
     /** Ist [state] gerade aktiv, den geänderten Hintergrund sofort übernehmen. */
     fun reapply(state: StempelState) {
@@ -408,10 +401,10 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
     }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        val (state, scr) = target ?: return@rememberLauncherForActivityResult
+        val (state, screen) = target ?: return@rememberLauncherForActivityResult
         if (uri != null) {
             AppScope.launch {
-                val ok = Wallpapers.import(ctx, uri, Wallpapers.imageFile(ctx, state, scr))
+                val ok = Wallpapers.import(ctx, uri, Wallpapers.imageFile(ctx, state, screen))
                 if (ok) reapply(state)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(ctx, if (ok) "Bild gespeichert" else "Bild konnte nicht gelesen werden", Toast.LENGTH_SHORT).show()
@@ -421,25 +414,11 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
             }
         }
     }
-    fun pick(state: StempelState) {
+    fun pick(state: StempelState, screen: Screen) {
         target = state to screen
         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
-    /** Eigenes Bild entfernen: Farbe statt Bild (Start) bzw. Farbe/Bild vom Start (Sperre). */
-    fun removeImage(state: StempelState) {
-        Wallpapers.imageFile(ctx, state, screen).delete()
-        // Sperre ohne eigene Farbe fiele sonst auf den Startbildschirm zurück.
-        if (screen == Screen.LOCK) {
-            val c = WallpaperPlan.color(cfg, state, Screen.LOCK)
-            when (state) {
-                StempelState.NICHT_EINGELOGGT -> save { it.copy(colorOutLock = it.colorOutLock ?: c) }
-                StempelState.EINGELOGGT -> save { it.copy(colorInLock = it.colorInLock ?: c) }
-                StempelState.NEUTRAL -> {}
-            }
-        }
-        changed(state)
-    }
-    fun setColor(state: StempelState, c: Int) {
+    fun setColor(state: StempelState, screen: Screen, c: Int) {
         save {
             when {
                 screen == Screen.HOME && state == StempelState.EINGELOGGT -> it.copy(colorIn = c)
@@ -450,21 +429,16 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
         }
         changed(state)
     }
-    /** Sperrbildschirm wieder wie Startbildschirm. */
-    fun likeHome(state: StempelState) {
-        Wallpapers.imageFile(ctx, state, Screen.LOCK).delete()
-        when (state) {
-            StempelState.NICHT_EINGELOGGT -> save { it.copy(colorOutLock = null) }
-            StempelState.EINGELOGGT -> save { it.copy(colorInLock = null) }
-            StempelState.NEUTRAL -> {}
-        }
-        changed(state)
+    fun removeImage(state: StempelState, screen: Screen) {
+        Wallpapers.imageFile(ctx, state, screen).delete()
+        // Sperrbildschirm behält die angezeigte Farbe als eigene (sonst nähme er das Bild vom Start).
+        if (screen == Screen.LOCK) setColor(state, screen, WallpaperPlan.color(cfg, state, screen)) else changed(state)
     }
 
     SectionCard("Hintergründe") {
         Text(
-            "Für jeden Zustand ein eigener Hintergrund, auf Wunsch getrennt für Start- und " +
-                "Sperrbildschirm. Änderungen am gerade aktiven Zustand werden sofort übernommen.",
+            "Für jeden Zustand ein eigener Hintergrund. Änderungen am gerade aktiven Zustand " +
+                "werden sofort übernommen.",
             style = MaterialTheme.typography.bodySmall,
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -473,73 +447,56 @@ private fun WallpaperCard(cfg: Config, hasOriginal: Boolean, save: ((Config) -> 
             Checkbox(cfg.onLock, { v -> save { it.copy(onLock = v) } })
             Text("Sperrbildschirm")
         }
-        if (cfg.onHome && cfg.onLock) {
-            Text("Bearbeiten für:", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Screen.entries.forEach { s ->
-                    FilterChip(
-                        selected = screen == s,
-                        onClick = { chosen = s },
-                        label = { Text(s.label) },
-                    )
-                }
-            }
-        }
-        if (!cfg.onHome && !cfg.onLock) {
-            Text("Kein Bildschirm gewählt – die App ändert keinen Hintergrund.", style = MaterialTheme.typography.bodySmall)
-            return@SectionCard
-        }
 
-        WallpaperSlot(
-            title = "Normal",
-            hint = if (hasOriginal) {
-                "Dein normaler Hintergrund, kommt nach dem Ausloggen zurück."
-            } else {
-                "Noch nicht gewählt – ohne Bild kann Ausloggen deinen Hintergrund nicht wiederherstellen."
-            },
-            state = StempelState.NEUTRAL,
-            screen = screen,
-            cfg = cfg,
-            colors = null,
-            refresh = refresh,
-            onColor = {},
-            onPick = { pick(StempelState.NEUTRAL) },
-            onRemoveImage = null,
-            onLikeHome = { likeHome(StempelState.NEUTRAL) },
-        )
-        WallpaperSlot(
-            title = "Einloggen-Erinnerung",
-            hint = "Wenn du an der FH erkannt wirst und noch nicht eingeloggt bist.",
-            state = StempelState.NICHT_EINGELOGGT,
-            screen = screen,
-            cfg = cfg,
-            colors = OUT_COLORS,
-            refresh = refresh,
-            onColor = { setColor(StempelState.NICHT_EINGELOGGT, it) },
-            onPick = { pick(StempelState.NICHT_EINGELOGGT) },
-            onRemoveImage = { removeImage(StempelState.NICHT_EINGELOGGT) },
-            onLikeHome = { likeHome(StempelState.NICHT_EINGELOGGT) },
-        )
-        WallpaperSlot(
-            title = "Eingeloggt",
-            hint = "Nach dem Einloggen, bis du dich ausloggst.",
-            state = StempelState.EINGELOGGT,
-            screen = screen,
-            cfg = cfg,
-            colors = IN_COLORS,
-            refresh = refresh,
-            onColor = { setColor(StempelState.EINGELOGGT, it) },
-            onPick = { pick(StempelState.EINGELOGGT) },
-            onRemoveImage = { removeImage(StempelState.EINGELOGGT) },
-            onLikeHome = { likeHome(StempelState.EINGELOGGT) },
-        )
+        listOfNotNull(Screen.HOME.takeIf { cfg.onHome }, Screen.LOCK.takeIf { cfg.onLock }).forEach { screen ->
+            Text(screen.label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+            WallpaperSlot(
+                title = "Normal",
+                hint = if (hasOriginal) {
+                    "Dein normaler Hintergrund, kommt nach dem Ausloggen zurück."
+                } else {
+                    "Noch nicht gewählt – ohne Bild kann Ausloggen deinen Hintergrund nicht wiederherstellen."
+                },
+                state = StempelState.NEUTRAL,
+                screen = screen,
+                cfg = cfg,
+                colors = null,
+                refresh = refresh,
+                onColor = {},
+                onPick = { pick(StempelState.NEUTRAL, screen) },
+                onRemove = null,
+            )
+            WallpaperSlot(
+                title = "Einloggen-Erinnerung",
+                hint = "Wenn du an der FH erkannt wirst und noch nicht eingeloggt bist.",
+                state = StempelState.NICHT_EINGELOGGT,
+                screen = screen,
+                cfg = cfg,
+                colors = OUT_COLORS,
+                refresh = refresh,
+                onColor = { setColor(StempelState.NICHT_EINGELOGGT, screen, it) },
+                onPick = { pick(StempelState.NICHT_EINGELOGGT, screen) },
+                onRemove = { removeImage(StempelState.NICHT_EINGELOGGT, screen) },
+            )
+            WallpaperSlot(
+                title = "Eingeloggt",
+                hint = "Nach dem Einloggen, bis du dich ausloggst.",
+                state = StempelState.EINGELOGGT,
+                screen = screen,
+                cfg = cfg,
+                colors = IN_COLORS,
+                refresh = refresh,
+                onColor = { setColor(StempelState.EINGELOGGT, screen, it) },
+                onPick = { pick(StempelState.EINGELOGGT, screen) },
+                onRemove = { removeImage(StempelState.EINGELOGGT, screen) },
+            )
+        }
     }
 }
 
 /**
  * Ein Hintergrund für [screen] mit Vorschau. [colors] = null: nur eigenes Bild (Normal), sonst
- * erzeugtes Farbbild mit Text oder eigenes Bild. Auf dem Sperrbildschirm ohne Eigenes gilt
- * das vom Startbildschirm, mit Eigenem lässt es sich dorthin zurücksetzen ([onLikeHome]).
+ * erzeugtes Farbbild mit Text oder eigenes Bild. Die Vorschau zeigt, was wirklich gesetzt wird.
  */
 @Composable
 private fun WallpaperSlot(
@@ -552,21 +509,17 @@ private fun WallpaperSlot(
     refresh: Int,
     onColor: (Int) -> Unit,
     onPick: () -> Unit,
-    onRemoveImage: (() -> Unit)?,
-    onLikeHome: () -> Unit,
+    onRemove: (() -> Unit)?,
 ) {
     val ctx = LocalContext.current
     val selected = WallpaperPlan.color(cfg, state, screen)
     var preview by remember { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(refresh, selected, screen, cfg) {
+    LaunchedEffect(refresh, cfg) {
         preview = withContext(Dispatchers.IO) {
             Wallpapers.preview(ctx, state, screen, 240)?.asImageBitmap()
         }
     }
-    val hasImage = remember(refresh, screen) { Wallpapers.hasImage(ctx, state, screen) }
-    val isLock = screen == Screen.LOCK
-    val ownLock = isLock && WallpaperPlan.hasOwnLock(cfg, state, hasImage)
-    val followsHome = isLock && !ownLock
+    val hasImage = remember(refresh) { Wallpapers.hasImage(ctx, state, screen) }
 
     HorizontalDivider()
     Text(title, style = MaterialTheme.typography.titleSmall)
@@ -588,22 +541,14 @@ private fun WallpaperSlot(
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(hint, style = MaterialTheme.typography.bodySmall)
-            if (followsHome) {
-                Text(
-                    "Wie Startbildschirm. Bild oder Farbe wählen, um es hier zu ändern.",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
             if (colors != null && !hasImage) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     colors.forEach { c ->
-                        val marked = c == selected && !followsHome
                         Box(
                             Modifier
                                 .size(32.dp)
                                 .background(Color(c), CircleShape)
-                                .border(if (marked) 3.dp else 0.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                .border(if (c == selected) 3.dp else 0.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                                 .clickable { onColor(c) },
                         )
                     }
@@ -611,17 +556,7 @@ private fun WallpaperSlot(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 OutlinedButton(onClick = onPick) { Text(if (hasImage) "Bild ändern" else "Bild wählen") }
-                if (hasImage && onRemoveImage != null && !isLock) {
-                    TextButton(onClick = onRemoveImage) { Text("Farbe statt Bild") }
-                }
-            }
-            if (ownLock) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    if (hasImage && onRemoveImage != null) {
-                        TextButton(onClick = onRemoveImage) { Text("Farbe statt Bild") }
-                    }
-                    TextButton(onClick = onLikeHome) { Text("Wie Startbildschirm") }
-                }
+                if (hasImage && onRemove != null) TextButton(onClick = onRemove) { Text("Farbe statt Bild") }
             }
         }
     }

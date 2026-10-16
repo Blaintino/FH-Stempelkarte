@@ -73,6 +73,9 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   Startbildschirms behalten die alten Namen. `Wallpapers.apply`: gleiche Quelle → ein Aufruf
   mit beiden Flags, sonst erst `FLAG_SYSTEM`, dann `FLAG_LOCK`. `hasOriginal` prüft alle
   eingeschalteten Bildschirme.
+  Oberfläche (Wunsch des Nutzers: eine Auswahl „Bearbeiten für“ war verwirrend): einfach
+  untereinander 3× Startbildschirm, 3× Sperrbildschirm, gleiche Slots wie vorher. Die Vorschau
+  zeigt, was wirklich gesetzt wird (auch die Übernahme vom Start).
 - Erster Gerätetest 2026-10-16: Meldung kam erst beim Öffnen der App, die
   Hintergrund-Erkennung griff nicht. Deshalb: `EventLog` (Protokoll in der Prüfliste,
   `files/protokoll.txt`) an allen Hintergrund-Stellen und im Fenster eine 5-Min-Prüfung per
