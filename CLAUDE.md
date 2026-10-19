@@ -53,10 +53,16 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   Registrierungen). `Detector.start` meldet zuerst alles ab. FH-Standort lässt sich löschen.
 - SSID: zuerst `NetworkCapabilities.transportInfo`, ab Android 12 oft geschwärzt, dann
   `WifiManager.connectionInfo` (braucht Standort-Recht, im Hintergrund „Immer erlauben“).
-- **Ablauf (Wunsch des Nutzers, 2026-10-14): kein Widget.** Meldung antippen oder App
+- **Ablauf (Wunsch des Nutzers, 2026-10-14):** Meldung antippen oder App
   öffnen → `ZeusActivity` (durchsichtiger Dialog, Launcher-Activity) mit *Einloggen* /
   *Ausloggen* / *Abbrechen* / *Einstellungen* → ZEUS. `MainActivity` sind nur noch die
   Einstellungen (nicht exportiert); ohne gewählte ZEUS-App springt der Start direkt dorthin.
+- **Widget wieder da (Wunsch des Nutzers, 2026-10-19)**: `StempelWidget` (`Widget.kt`,
+  klassische RemoteViews, kein Glance). Hintergrund in Zustandsfarbe (feste Rot/Grün-Drawables,
+  nicht die Hintergrund-Farben aus `Config`), Knöpfe *Einloggen*/*Ausloggen* starten
+  `ZeusActivity` mit `EXTRA_DIRECT` → sofort `setState` + ZEUS, ohne Auswahl; Ausloggen ohne
+  Original fragt trotzdem (`LogoutNoOriginalDialog`). Tipp auf die Fläche = normale Auswahl.
+  `Stempel.setState` und `BootReceiver` rufen `StempelWidget.updateAll`.
 - Meldung: Kanal `einstempeln`, Kategorie `REMINDER`, nicht `ongoing`, `cancel` + `notify`
   (Huawei Health), kein Vollbild-Intent, keine Knöpfe – Antippen öffnet die Auswahl.
 - Originalhintergrund wird nie vom System gelesen, sondern per Photo Picker gewählt und nach

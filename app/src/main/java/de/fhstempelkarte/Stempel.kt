@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 object Stempel {
 
     /**
-     * Der einzige Weg, den Zustand zu ändern: speichern, Meldung, Erkennung,
+     * Der einzige Weg, den Zustand zu ändern: speichern, Meldung, Widget, Erkennung,
      * Hintergrund. Hier später den Broadcast an Quälgeist ergänzen (siehe CLAUDE.md).
      * [clearIfNoOriginal]: bei `NEUTRAL` ohne gespeichertes Original den Systemhintergrund
      * wiederherstellen – nur nach Rückfrage beim Nutzer.
@@ -22,6 +22,7 @@ object Stempel {
         } else {
             Notifier.cancel(ctx)
         }
+        runCatching { StempelWidget.updateAll(ctx) }
         runCatching { Scheduler.planAll(ctx) }
         return Wallpapers.apply(ctx, state, clearIfNoOriginal)
     }

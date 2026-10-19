@@ -70,6 +70,7 @@ class BootReceiver : BroadcastReceiver() {
         async {
             EventLog.add(ctx, "System: ${intent.action?.substringAfterLast('.')}")
             if (Scheduler.planAll(ctx)) Detector.checkNow(ctx)
+            runCatching { StempelWidget.updateAll(ctx) }
         }
     }
 

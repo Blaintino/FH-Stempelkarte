@@ -19,9 +19,11 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
   löschen.
 - Ausgelöst wird höchstens **einmal am Tag** und nur aus dem Zustand *Neutral*.
 - **Ablauf**: Erinnerung antippen **oder** App öffnen → Auswahl *Einloggen* / *Ausloggen* /
-  *Abbrechen* → ZEUS startet. Kein Widget. Die Einstellungen erreichst du über den Knopf
+  *Abbrechen* → ZEUS startet. Die Einstellungen erreichst du über den Knopf
   *Einstellungen* in der Auswahl (beim allerersten Start, solange keine ZEUS-App gewählt ist,
   direkt). Dort gibt es dieselben Knöpfe noch einmal ohne ZEUS-Start.
+- **Widget** für den Startbildschirm: Farbe zeigt den Zustand, *Einloggen* / *Ausloggen*
+  wirken sofort (ohne Auswahl) und öffnen danach ZEUS. Tipp auf den Zustand öffnet die Auswahl.
 - **Keine Erinnerung zum Abmelden**: Der grüne Hintergrund ist die Erinnerung. *Eingeloggt*
   bleibt über Nacht, bis du abmeldest; solange wird morgens nichts ausgelöst.
 - **Drei Hintergründe** in den Einstellungen, jeweils mit Vorschau: *Normal* (dein eigenes
@@ -81,6 +83,7 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `Receivers.kt` | Fenster-, Erkennungs- und Boot-Receiver |
 | `Wallpapers.kt` | Hintergrund setzen, Bilder erzeugen/importieren |
 | `Notifier.kt` | Meldung „Einstempeln nicht vergessen“ |
+| `Widget.kt` | Startbildschirm-Widget (RemoteViews) |
 | `Zeus.kt` | ZEUS starten, Auswahl-Dialog (Startpunkt der App) |
 | `Store.kt` | SharedPreferences (Einstellungen + Zustand) |
 | `Ui.kt`, `Reliability.kt` | Einstellungen, Prüfliste |

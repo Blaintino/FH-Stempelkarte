@@ -228,6 +228,11 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
                     },
                 )
                 OutlinedButton(onClick = { pickZeus = true }) { Text("App wählen…") }
+                Text(
+                    "Widget: Startbildschirm lange drücken → Widgets → FH Stempelkarte. " +
+                        "Einloggen/Ausloggen dort direkt, danach startet ZEUS.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
         item { WallpaperCard(cfg, hasOriginal, ::save) }
