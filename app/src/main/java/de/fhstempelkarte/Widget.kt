@@ -11,7 +11,7 @@ import android.widget.RemoteViews
 
 /**
  * Startbildschirm-Widget (klassische RemoteViews, kein Glance): Farbe zeigt den Zustand,
- * *Einloggen*/*Ausloggen* gehen direkt über [ZeusActivity] (ohne Auswahl-Dialog) und
+ * „Einloggen“ und „Ausloggen“ gehen direkt über [ZeusActivity] (ohne Auswahl-Dialog) und
  * öffnen ZEUS; Tipp auf den Zustand öffnet die normale Auswahl.
  */
 class StempelWidget : AppWidgetProvider() {
