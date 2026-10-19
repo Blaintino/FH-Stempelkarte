@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,22 +61,31 @@ object Zeus {
  * Startpunkt der App (Launcher) und Ziel der Meldung: durchsichtiger Dialog
  * Anmelden / Abmelden / Abbrechen, danach ZEUS. Einstellungen über einen eigenen Knopf;
  * ohne gewählte ZEUS-App (erster Start) direkt in die Einstellungen.
+ * Aus den Widget-Knöpfen mit [EXTRA_DIRECT]: ohne Auswahl sofort ein-/ausloggen
+ * (Rückfrage nur beim Ausloggen ohne Originalbild).
  */
 class ZeusActivity : ComponentActivity() {
+    companion object {
+        const val EXTRA_DIRECT = "direkt"
+        const val DIRECT_IN = "de.fhstempelkarte.EINLOGGEN"
+        const val DIRECT_OUT = "de.fhstempelkarte.AUSLOGGEN"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Notifier.ensureChannel(this)
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“) bei jedem App-Start.
         val app = applicationContext
         AppScope.launch { if (Scheduler.planAll(app)) Detector.checkNow(app, "App geöffnet") }
-        if (Store(this).config.zeusPackage == null) {
+        val direct = intent.getStringExtra(EXTRA_DIRECT)
+        if (direct == null && Store(this).config.zeusPackage == null) {
             openSettings(this)
             finish()
             return
         }
         setContent {
             AppTheme {
-                ZeusDialog(onClose = ::finish)
+                ZeusDialog(direct = direct, onClose = ::finish)
             }
         }
     }
@@ -86,7 +96,7 @@ fun openSettings(ctx: Context) {
 }
 
 @Composable
-private fun ZeusDialog(onClose: () -> Unit) {
+private fun ZeusDialog(direct: String?, onClose: () -> Unit) {
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val state = remember { Store(ctx).state }
     var askClear by remember { mutableStateOf(false) }
@@ -101,6 +111,14 @@ private fun ZeusDialog(onClose: () -> Unit) {
         onClose()
     }
 
+    LaunchedEffect(Unit) {
+        when (direct) {
+            ZeusActivity.DIRECT_IN -> finishWith(StempelState.EINGELOGGT)
+            ZeusActivity.DIRECT_OUT ->
+                if (Wallpapers.hasOriginal(ctx)) finishWith(StempelState.NEUTRAL) else askClear = true
+        }
+    }
+
     if (askClear) {
         LogoutNoOriginalDialog(
             onClear = { finishWith(StempelState.NEUTRAL, clear = true) },
@@ -109,6 +127,8 @@ private fun ZeusDialog(onClose: () -> Unit) {
         )
         return
     }
+    // Widget-Knopf: keine Auswahl zeigen.
+    if (direct != null) return
 
     AlertDialog(
         onDismissRequest = onClose,

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">FH Stempelkarte</string>
+    <string name="widget_description">Einloggen oder ausloggen und ZEUS öffnen</string>
+    <string name="widget_in">Einloggen</string>
+    <string name="widget_out">Ausloggen</string>
+</resources>
