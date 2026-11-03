@@ -47,8 +47,18 @@ object InteropContract {
     /** Int oder null: Farbe des Stempelkarten-Widgets (ARGB); null = eigene neutrale Farbe nehmen. */
     const val COL_COLOR = "farbe"
 
+    /** Long: abgeschlossene Arbeitszeit heute (ms, Summe aller Sitzungen in `EINGELOGGT`). */
+    const val COL_WORK_CLOSED_MS = "arbeit_heute_ms"
+
+    /**
+     * Long: Beginn der laufenden Sitzung (ms seit 1970, auf heute 0:00 begrenzt), 0 = keine.
+     * Arbeitszeit jetzt = [COL_WORK_CLOSED_MS] + (jetzt − [COL_WORK_RUNNING_SINCE]), falls > 0.
+     */
+    const val COL_WORK_RUNNING_SINCE = "arbeit_laeuft_seit"
+
     val COLUMNS = arrayOf(
         COL_VERSION, COL_STATE, COL_LABEL, COL_SINCE, COL_TRIGGER_INFO, COL_DETECTING_UNTIL, COL_COLOR,
+        COL_WORK_CLOSED_MS, COL_WORK_RUNNING_SINCE,
     )
 
     /**
@@ -85,6 +95,8 @@ object InteropContract {
         detectingUntil: Long,
         colorOut: Int,
         colorIn: Int,
+        workClosedMs: Long = 0,
+        workRunningSince: Long = 0,
     ): Array<Any?> = arrayOf(
         VERSION,
         state.name,
@@ -97,5 +109,7 @@ object InteropContract {
             StempelState.NICHT_EINGELOGGT -> colorOut
             StempelState.EINGELOGGT -> colorIn
         },
+        workClosedMs,
+        workRunningSince,
     )
 }

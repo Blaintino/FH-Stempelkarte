@@ -7,6 +7,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import java.time.ZonedDateTime
 
 /** Android-Seite von [InteropContract]: Änderungen an andere eigene Apps melden. */
 object Interop {
@@ -62,6 +63,7 @@ class StatusProvider : ContentProvider() {
         val ctx = context ?: return null
         if (uri.pathSegments != listOf(InteropContract.PATH_STATUS)) return null
         val store = Store(ctx)
+        val now = ZonedDateTime.now()
         val row = InteropContract.statusRow(
             state = store.state,
             since = store.stateSince,
@@ -69,6 +71,8 @@ class StatusProvider : ContentProvider() {
             detectingUntil = store.detectingUntil,
             colorOut = ctx.getColor(R.color.widget_out),
             colorIn = ctx.getColor(R.color.widget_in),
+            workClosedMs = WorkTime.closedToday(store.workDay, now),
+            workRunningSince = WorkTime.runningSince(store.state, store.stateSince, now),
         )
         // Projektion wird ignoriert: immer alle Spalten, Leser greifen per Spaltenname zu.
         return MatrixCursor(InteropContract.COLUMNS, 1).apply {

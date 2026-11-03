@@ -111,6 +111,12 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   prüft den Komponentennamen) – nicht über den offenen Launcher-Eintrag. Öffentliche Namen nie
   still ändern (`oeffentlicheNamenStabil`), nur ergänzen. `Store.stateSince` wird in
   `setState` beim echten Wechsel gesetzt. Auf dem Gerät noch nicht getestet.
+- **Arbeitszeit pro Tag (Wunsch des Nutzers, 2026-11-03, für das Chip-Widget)**: `WorkTime.kt` (rein,
+  `WorkTimeTest`), Zeit in `EINGELOGGT` aufsummiert über mehrmaliges Ein-/Ausloggen; beim Verlassen von
+  `EINGELOGGT` schließt `setState` die Sitzung ab (`Store.workDay` = Tag + Summe). Nur der heutige Tag,
+  Sitzung über Mitternacht zählt ab 0:00. Über den Provider als `arbeit_heute_ms` +
+  `arbeit_laeuft_seit` (zusätzliche Spalten, Version bleibt 1). Die Stempelkarte zeigt sie selbst
+  (noch) nicht an.
 
 ## Rahmenbedingungen
 

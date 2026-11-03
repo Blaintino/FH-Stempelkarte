@@ -43,6 +43,13 @@ Die nutzende App trägt ein:
 | `ausgeloest` | String? | zuletzt ausgelöst, z. B. „Mo 03.11. 07:42 · WLAN eduroam“ |
 | `erkennung_bis` | Long | Ende der laufenden Erkennung (ms), 0 = keine |
 | `farbe` | Int? | Farbe des Stempelkarten-Widgets (ARGB): Rot/Grün; null bei `NEUTRAL` (eigene Farbe nehmen) |
+| `arbeit_heute_ms` | Long | abgeschlossene Arbeitszeit heute (Summe aller Sitzungen in `EINGELOGGT`, ms) |
+| `arbeit_laeuft_seit` | Long | Beginn der laufenden Sitzung (ms, auf heute 0:00 begrenzt), 0 = keine |
+
+Arbeitszeit jetzt = `arbeit_heute_ms` + (jetzt − `arbeit_laeuft_seit`), falls `arbeit_laeuft_seit` > 0.
+So kann ein Widget sie mit einem `Chronometer` weiterzählen lassen, ohne jede Minute neu zu zeichnen.
+Eine Sitzung über Mitternacht zählt ab 0:00 zum neuen Tag; der Leser sollte kurz nach Mitternacht
+neu lesen. Bei Eingeloggt aus der Zeit vor dieser Spalte (Beginn unbekannt) ist sie 0.
 
 Spalten immer per Name lesen (`getColumnIndex`), nicht per Position.
 
