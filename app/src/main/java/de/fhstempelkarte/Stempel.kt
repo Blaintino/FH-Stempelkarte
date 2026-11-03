@@ -8,14 +8,17 @@ import java.time.format.DateTimeFormatter
 object Stempel {
 
     /**
-     * Der einzige Weg, den Zustand zu ändern: speichern, Meldung, Widget, Erkennung,
-     * Hintergrund. Hier später den Broadcast an Quälgeist ergänzen (siehe CLAUDE.md).
+     * Der einzige Weg, den Zustand zu ändern: speichern, Meldung, Widget, andere Apps
+     * ([Interop], `INTEROP.md`), Erkennung, Hintergrund.
      * [clearIfNoOriginal]: bei `NEUTRAL` ohne gespeichertes Original den Systemhintergrund
      * wiederherstellen – nur nach Rückfrage beim Nutzer.
      */
     fun setState(ctx: Context, state: StempelState, clearIfNoOriginal: Boolean = false): Wallpapers.Result {
         val store = Store(ctx)
-        if (store.state != state) EventLog.add(ctx, "Zustand: ${store.state.label} → ${state.label}")
+        if (store.state != state) {
+            EventLog.add(ctx, "Zustand: ${store.state.label} → ${state.label}")
+            store.stateSince = System.currentTimeMillis()
+        }
         store.state = state
         if (state == StempelState.NICHT_EINGELOGGT) {
             runCatching { Notifier.show(ctx) }
@@ -23,6 +26,7 @@ object Stempel {
             Notifier.cancel(ctx)
         }
         runCatching { StempelWidget.updateAll(ctx) }
+        runCatching { Interop.notifyChanged(ctx) }
         runCatching { Scheduler.planAll(ctx) }
         return Wallpapers.apply(ctx, state, clearIfNoOriginal)
     }

@@ -71,6 +71,8 @@ class BootReceiver : BroadcastReceiver() {
             EventLog.add(ctx, "System: ${intent.action?.substringAfterLast('.')}")
             if (Scheduler.planAll(ctx)) Detector.checkNow(ctx)
             runCatching { StempelWidget.updateAll(ctx) }
+            // Andere Apps (Chip-Widget) nach Neustart/Update den aktuellen Stand wissen lassen.
+            runCatching { Interop.notifyChanged(ctx) }
         }
     }
 

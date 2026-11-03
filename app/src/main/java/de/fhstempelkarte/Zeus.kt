@@ -77,7 +77,8 @@ class ZeusActivity : ComponentActivity() {
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“) bei jedem App-Start.
         val app = applicationContext
         AppScope.launch { if (Scheduler.planAll(app)) Detector.checkNow(app, "App geöffnet") }
-        val direct = intent.getStringExtra(EXTRA_DIRECT)
+        // Widget-Knöpfe (Extra) oder andere eigene Apps über die geschützte Alias (Aktion).
+        val direct = intent.getStringExtra(EXTRA_DIRECT) ?: Interop.directFromExtern(intent)
         if (direct == null && Store(this).config.zeusPackage == null) {
             openSettings(this)
             finish()

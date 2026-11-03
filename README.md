@@ -37,6 +37,10 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
 Hinweis: Für den pünktlichen Start nutzt die App einen Wecker-Alarm. Deshalb zeigt Android
 für die Startzeit des Fensters (7:00) ein Wecker-Symbol bzw. „nächster Wecker“ an.
 
+**Für andere eigene Apps** (z. B. das Widget der Kalender-App Chip): Status lesen, bei
+Änderungen benachrichtigt werden und ein-/ausloggen – nur für Apps mit demselben
+Signaturschlüssel. Details in [`INTEROP.md`](INTEROP.md).
+
 ## Einrichten
 
 1. Prüfliste durchgehen: Benachrichtigungen, exakte Alarme, Standort „genau“ und
@@ -86,6 +90,7 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `Widget.kt` | Startbildschirm-Widget (RemoteViews) |
 | `Zeus.kt` | ZEUS starten, Auswahl-Dialog (Startpunkt der App) |
 | `Store.kt` | SharedPreferences (Einstellungen + Zustand) |
+| `InteropContract.kt`, `Interop.kt` | Schnittstelle für eigene Apps (Chip-Widget), siehe `INTEROP.md` |
 | `Ui.kt`, `Reliability.kt` | Einstellungen, Prüfliste |
 
 ## Lizenz
