@@ -60,7 +60,9 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 - **Widget wieder da (Wunsch des Nutzers, 2026-10-19)**: `StempelWidget` (`Widget.kt`,
   klassische RemoteViews, kein Glance). Hintergrund in Zustandsfarbe (feste Rot/Grün-Drawables,
   nicht die Hintergrund-Farben aus `Config`), Knöpfe *Einloggen*/*Ausloggen* starten
-  `ZeusActivity` mit `EXTRA_DIRECT` → sofort `setState` + ZEUS, ohne Auswahl; Ausloggen ohne
+  die geschützte Alias `.ExternZeus` (Aktionen `EINLOGGEN`/`AUSLOGGEN`, wie Chip) → sofort
+  `setState` + ZEUS, ohne Auswahl (früher Extra `EXTRA_DIRECT` am offenen Launcher-Eintrag –
+  damit konnte jede App stempeln, deshalb entfernt); Ausloggen ohne
   Original fragt trotzdem (`LogoutNoOriginalDialog`). Tipp auf die Fläche = normale Auswahl.
   `Stempel.setState` und `BootReceiver` rufen `StempelWidget.updateAll`.
 - Meldung: Kanal `einstempeln`, Kategorie `REMINDER`, nicht `ongoing`, `cancel` + `notify`

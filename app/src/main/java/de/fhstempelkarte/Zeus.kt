@@ -61,12 +61,11 @@ object Zeus {
  * Startpunkt der App (Launcher) und Ziel der Meldung: durchsichtiger Dialog
  * Anmelden / Abmelden / Abbrechen, danach ZEUS. Einstellungen über einen eigenen Knopf;
  * ohne gewählte ZEUS-App (erster Start) direkt in die Einstellungen.
- * Aus den Widget-Knöpfen mit [EXTRA_DIRECT]: ohne Auswahl sofort ein-/ausloggen
+ * Über die Alias [Interop.EXTERN_ALIAS] (Widget-Knöpfe, Chip): ohne Auswahl sofort ein-/ausloggen
  * (Rückfrage nur beim Ausloggen ohne Originalbild).
  */
 class ZeusActivity : ComponentActivity() {
     companion object {
-        const val EXTRA_DIRECT = "direkt"
         const val DIRECT_IN = "de.fhstempelkarte.EINLOGGEN"
         const val DIRECT_OUT = "de.fhstempelkarte.AUSLOGGEN"
     }
@@ -77,8 +76,9 @@ class ZeusActivity : ComponentActivity() {
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“) bei jedem App-Start.
         val app = applicationContext
         AppScope.launch { if (Scheduler.planAll(app)) Detector.checkNow(app, "App geöffnet") }
-        // Widget-Knöpfe (Extra) oder andere eigene Apps über die geschützte Alias (Aktion).
-        val direct = intent.getStringExtra(EXTRA_DIRECT) ?: Interop.directFromExtern(intent)
+        // Direkt ein-/ausloggen nur über die geschützte Alias (eigenes Widget, Chip). Über den
+        // offenen Launcher-Eintrag gibt es immer die Auswahl – sonst könnte jede App stempeln.
+        val direct = Interop.directFromExtern(intent)
         if (direct == null && Store(this).config.zeusPackage == null) {
             openSettings(this)
             finish()

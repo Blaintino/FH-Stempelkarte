@@ -70,7 +70,7 @@ object InteropContract {
     /** Apps, die den Broadcast bekommen (müssen auch im Manifest unter `<queries>` stehen). */
     val CONSUMERS = listOf("de.blaintino.chip", "de.quaelgeist", "de.quaelgeist.beta")
 
-    /** Aktion von außen → Wert für `ZeusActivity.EXTRA_DIRECT` (null = normale Auswahl). */
+    /** Aktion über die geschützte Alias → Direktwert für `ZeusActivity` (null = normale Auswahl). */
     fun directFor(action: String?): String? = when (action) {
         ACTION_LOGIN -> ZeusActivity.DIRECT_IN
         ACTION_LOGOUT -> ZeusActivity.DIRECT_OUT

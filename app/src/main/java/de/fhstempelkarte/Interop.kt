@@ -40,7 +40,7 @@ object Interop {
         }
     }
 
-    /** Bei Aufruf über [EXTERN_ALIAS]: Aktion → `EXTRA_DIRECT`, sonst null. */
+    /** Nur bei Aufruf über [EXTERN_ALIAS]: Aktion → Direktwert für `ZeusActivity`, sonst null. */
     fun directFromExtern(intent: Intent?): String? =
         intent?.takeIf { it.component?.className == EXTERN_ALIAS }?.let { InteropContract.directFor(it.action) }
 }
