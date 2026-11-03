@@ -28,7 +28,7 @@ object Interop {
         val store = Store(ctx)
         val state = store.state
         val since = store.stateSince
-        for (pkg in InteropContract.CONSUMERS) {
+        val failed = InteropContract.CONSUMERS.filter { pkg ->
             runCatching {
                 ctx.sendBroadcast(
                     Intent(InteropContract.ACTION_STATE_CHANGED)
@@ -37,8 +37,14 @@ object Interop {
                         .putExtra(InteropContract.COL_SINCE, since),
                     permission(ctx),
                 )
-            }
+            }.isFailure
         }
+        // Für die Fehlersuche (Chip-Widget zeigte keinen Wechsel): im Protokoll der Prüfliste.
+        EventLog.add(
+            ctx,
+            "Andere Apps benachrichtigt: ${state.label}" +
+                if (failed.isEmpty()) "" else " (fehlgeschlagen: ${failed.joinToString()})",
+        )
     }
 
     /** Nur bei Aufruf über [EXTERN_ALIAS]: Aktion → Direktwert für `ZeusActivity`, sonst null. */
