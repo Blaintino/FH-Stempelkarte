@@ -60,7 +60,9 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 - **Widget wieder da (Wunsch des Nutzers, 2026-10-19)**: `StempelWidget` (`Widget.kt`,
   klassische RemoteViews, kein Glance). Hintergrund in Zustandsfarbe (feste Rot/Grün-Drawables,
   nicht die Hintergrund-Farben aus `Config`), Knöpfe *Einloggen*/*Ausloggen* starten
-  `ZeusActivity` mit `EXTRA_DIRECT` → sofort `setState` + ZEUS, ohne Auswahl; Ausloggen ohne
+  die geschützte Alias `.ExternZeus` (Aktionen `EINLOGGEN`/`AUSLOGGEN`, wie Chip) → sofort
+  `setState` + ZEUS, ohne Auswahl (früher Extra `EXTRA_DIRECT` am offenen Launcher-Eintrag –
+  damit konnte jede App stempeln, deshalb entfernt); Ausloggen ohne
   Original fragt trotzdem (`LogoutNoOriginalDialog`). Tipp auf die Fläche = normale Auswahl.
   `Stempel.setState` und `BootReceiver` rufen `StempelWidget.updateAll`.
 - Meldung: Kanal `einstempeln`, Kategorie `REMINDER`, nicht `ongoing`, `cancel` + `notify`
@@ -95,6 +97,20 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   vermutlich aus/kein FH-Standort). ZEUS-Paket auf dem Gerät: `de.isgus.zeusmobile`.
   USB/adb ist inzwischen möglich (Gerät `SM-S948B`).
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
+- **Schnittstelle für eigene Apps (Wunsch des Nutzers, 2026-11-03)**: Vorbereitung, damit das
+  Widget der Kalender-App Chip (`Blaintino/Chip`) perspektivisch die Stempelkarte anzeigt und
+  bedient; Gestaltung dort noch offen, Chip noch nicht angepasst. Vertrag in `InteropContract.kt`
+  (rein, Test `InteropContractTest`), Beschreibung für die Gegenseite in `INTEROP.md`. Drei Wege,
+  alle hinter der `signature`-Berechtigung `${applicationId}.permission.INTEROP` (applicationId
+  im Namen, sonst Installationskonflikt mit der anders signierten Debug-App):
+  nur lesbarer `StatusProvider` (`content://de.fhstempelkarte.status/status`, eine Zeile),
+  expliziter Broadcast `ZUSTAND_GEAENDERT` an `InteropContract.CONSUMERS` (aus
+  `Stempel.setState` vor dem Hintergrund und aus `BootReceiver`, über `Interop.notifyChanged`),
+  Activity-Alias `.ExternZeus` mit Aktionen `EINLOGGEN`/`AUSLOGGEN`/`AUSWAHL`. Direkt-Aktionen
+  nimmt `ZeusActivity` nur an, wenn sie über diese Alias kam (`Interop.directFromExtern`
+  prüft den Komponentennamen) – nicht über den offenen Launcher-Eintrag. Öffentliche Namen nie
+  still ändern (`oeffentlicheNamenStabil`), nur ergänzen. `Store.stateSince` wird in
+  `setState` beim echten Wechsel gesetzt. Auf dem Gerät noch nicht getestet.
 
 ## Rahmenbedingungen
 
@@ -106,9 +122,9 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 
 ## Mögliche nächste Schritte (nur auf Nachfrage)
 
-- **Schnittstelle zu Quälgeist**: z. B. „30 Min nach Auslösen noch nicht eingeloggt →
-  Quälgeist nervt, bis angemeldet“. Geplant über eine eigene `signature`-Berechtigung (beide
-  Apps mit demselben Schlüssel signiert) und explizite Broadcasts mit `setPackage`. Andocken
-  in `Stempel.setState` (dort ist die Stelle kommentiert).
+- **Chip-Widget** an die Schnittstelle anbinden (in `Blaintino/Chip`, siehe Skizze in `INTEROP.md`).
+- **Quälgeist**: z. B. „30 Min nach Auslösen noch nicht eingeloggt → Quälgeist nervt, bis
+  angemeldet“. Der Broadcast `ZUSTAND_GEAENDERT` geht schon an `de.quaelgeist`/`.beta`;
+  Quälgeist braucht nur noch Berechtigung + Empfänger.
 - Eigenes App-Icon statt des Uhr-Symbols.
 - Feiertage/Semesterferien überspringen.

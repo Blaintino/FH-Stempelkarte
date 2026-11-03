@@ -58,6 +58,11 @@ class Store(ctx: Context) {
             .getOrDefault(StempelState.NEUTRAL)
         set(v) = put { putString(K_STATE, v.name) }
 
+    /** Zeitpunkt (ms) des letzten Zustandswechsels, 0 = unbekannt (vor dieser Version). */
+    var stateSince: Long
+        get() = p.getLong(K_SINCE, 0)
+        set(v) = put { putLong(K_SINCE, v) }
+
     var lastTriggerDay: LocalDate?
         get() = p.getString(K_LAST_DAY, null)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
         set(v) = put { putString(K_LAST_DAY, v?.toString()) }
@@ -123,6 +128,7 @@ class Store(ctx: Context) {
 
     companion object {
         private const val K_STATE = "state"
+        private const val K_SINCE = "stateSince"
         private const val K_LAST_DAY = "lastTriggerDay"
         private const val K_LAST_INFO = "lastTriggerInfo"
         private const val K_DETECTING = "detectingUntil"
