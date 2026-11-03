@@ -17,6 +17,10 @@ object Stempel {
         val store = Store(ctx)
         if (store.state != state) {
             EventLog.add(ctx, "Zustand: ${store.state.label} → ${state.label}")
+            // Arbeitszeit: laufende Sitzung beim Verlassen von EINGELOGGT abschließen.
+            if (store.state == StempelState.EINGELOGGT) {
+                store.workDay = WorkTime.close(store.workDay, store.stateSince, ZonedDateTime.now())
+            }
             store.stateSince = System.currentTimeMillis()
         }
         store.state = state

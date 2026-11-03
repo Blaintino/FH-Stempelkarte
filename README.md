@@ -90,6 +90,7 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `Widget.kt` | Startbildschirm-Widget (RemoteViews) |
 | `Zeus.kt` | ZEUS starten, Auswahl-Dialog (Startpunkt der App) |
 | `Store.kt` | SharedPreferences (Einstellungen + Zustand) |
+| `WorkTime.kt` | Arbeitszeit pro Tag (rein, getestet) |
 | `InteropContract.kt`, `Interop.kt` | Schnittstelle für eigene Apps (Chip-Widget), siehe `INTEROP.md` |
 | `Ui.kt`, `Reliability.kt` | Einstellungen, Prüfliste |
 
