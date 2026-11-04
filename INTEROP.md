@@ -45,9 +45,15 @@ Die nutzende App trägt ein:
 | `farbe` | Int? | Farbe des Stempelkarten-Widgets (ARGB): Rot/Grün; null bei `NEUTRAL` (eigene Farbe nehmen) |
 | `arbeit_heute_ms` | Long | abgeschlossene Arbeitszeit heute (Summe aller Sitzungen in `EINGELOGGT`, ms) |
 | `arbeit_laeuft_seit` | Long | Beginn der laufenden Sitzung (ms, auf heute 0:00 begrenzt), 0 = keine |
+| `arbeit_pausen_ms` | Long | angerechnete Pausen heute (Unterbrechungen ≥ 15 min zwischen Sitzungen, ms) |
 
 Arbeitszeit jetzt = `arbeit_heute_ms` + (jetzt − `arbeit_laeuft_seit`), falls `arbeit_laeuft_seit` > 0.
 So kann ein Widget sie mit einem `Chronometer` weiterzählen lassen, ohne jede Minute neu zu zeichnen.
+
+Das ist die **Brutto**-Anwesenheit. Netto nach § 4 ArbZG (`WorkTime.net`): mehr als 6 h → 30 min Pause,
+mehr als 9 h → 45 min insgesamt; was davon nicht schon als `arbeit_pausen_ms` genommen wurde, wird
+gleitend abgezogen – die Nettozeit bleibt bei 6:00 (bzw. 9:00) stehen, bis die fehlende Pause verstrichen
+ist. Ein Leser muss zu diesen Zeitpunkten neu zeichnen (Chronometer anhalten bzw. weiterlaufen lassen).
 Eine Sitzung über Mitternacht zählt ab 0:00 zum neuen Tag; der Leser sollte kurz nach Mitternacht
 neu lesen. Bei Eingeloggt aus der Zeit vor dieser Spalte (Beginn unbekannt) ist sie 0.
 

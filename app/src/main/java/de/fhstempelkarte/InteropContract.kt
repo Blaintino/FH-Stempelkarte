@@ -56,9 +56,15 @@ object InteropContract {
      */
     const val COL_WORK_RUNNING_SINCE = "arbeit_laeuft_seit"
 
+    /**
+     * Long: angerechnete Pausen heute (ms; Unterbrechungen ≥ 15 min zwischen Sitzungen). Nettozeit
+     * nach § 4 ArbZG siehe `WorkTime.net` und `INTEROP.md`.
+     */
+    const val COL_WORK_BREAK_MS = "arbeit_pausen_ms"
+
     val COLUMNS = arrayOf(
         COL_VERSION, COL_STATE, COL_LABEL, COL_SINCE, COL_TRIGGER_INFO, COL_DETECTING_UNTIL, COL_COLOR,
-        COL_WORK_CLOSED_MS, COL_WORK_RUNNING_SINCE,
+        COL_WORK_CLOSED_MS, COL_WORK_RUNNING_SINCE, COL_WORK_BREAK_MS,
     )
 
     /**
@@ -97,6 +103,7 @@ object InteropContract {
         colorIn: Int,
         workClosedMs: Long = 0,
         workRunningSince: Long = 0,
+        workBreakMs: Long = 0,
     ): Array<Any?> = arrayOf(
         VERSION,
         state.name,
@@ -111,5 +118,6 @@ object InteropContract {
         },
         workClosedMs,
         workRunningSince,
+        workBreakMs,
     )
 }

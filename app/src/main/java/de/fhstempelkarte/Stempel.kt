@@ -20,6 +20,9 @@ object Stempel {
             // Arbeitszeit: laufende Sitzung beim Verlassen von EINGELOGGT abschließen.
             if (store.state == StempelState.EINGELOGGT) {
                 store.workDay = WorkTime.close(store.workDay, store.stateSince, ZonedDateTime.now())
+            } else if (state == StempelState.EINGELOGGT) {
+                // Wieder eingeloggt: Unterbrechung seit dem Ausloggen als Pause anrechnen (ab 15 min).
+                store.workDay = WorkTime.open(store.workDay, ZonedDateTime.now())
             }
             store.stateSince = System.currentTimeMillis()
         }

@@ -8,7 +8,7 @@ class InteropContractTest {
     private val out = 0xFFC62828.toInt()
     private val inn = 0xFF2E7D32.toInt()
 
-    private fun row(state: StempelState) = InteropContract.statusRow(state, 1234L, "Test", 99L, out, inn, 5000L, 777L)
+    private fun row(state: StempelState) = InteropContract.statusRow(state, 1234L, "Test", 99L, out, inn, 5000L, 777L, 900L)
     private fun col(name: String) = InteropContract.COLUMNS.indexOf(name)
 
     @Test
@@ -26,6 +26,7 @@ class InteropContractTest {
         assertEquals(99L, r[col(InteropContract.COL_DETECTING_UNTIL)])
         assertEquals(5000L, r[col(InteropContract.COL_WORK_CLOSED_MS)])
         assertEquals(777L, r[col(InteropContract.COL_WORK_RUNNING_SINCE)])
+        assertEquals(900L, r[col(InteropContract.COL_WORK_BREAK_MS)])
     }
 
     @Test
@@ -54,5 +55,6 @@ class InteropContractTest {
         assertEquals("de.fhstempelkarte.action.AUSWAHL", InteropContract.ACTION_CHOOSE)
         assertEquals("arbeit_heute_ms", InteropContract.COL_WORK_CLOSED_MS)
         assertEquals("arbeit_laeuft_seit", InteropContract.COL_WORK_RUNNING_SINCE)
+        assertEquals("arbeit_pausen_ms", InteropContract.COL_WORK_BREAK_MS)
     }
 }
