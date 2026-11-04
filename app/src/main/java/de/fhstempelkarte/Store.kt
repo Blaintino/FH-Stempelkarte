@@ -68,10 +68,14 @@ class Store(ctx: Context) {
         get() = WorkTime.Day(
             p.getString(K_WORK_DAY, null)?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
             p.getLong(K_WORK_MS, 0),
+            p.getLong(K_WORK_BREAK, 0),
+            p.getLong(K_WORK_LAST_END, 0),
         )
         set(v) = put {
             putString(K_WORK_DAY, v.day?.toString())
             putLong(K_WORK_MS, v.closedMs)
+            putLong(K_WORK_BREAK, v.breakMs)
+            putLong(K_WORK_LAST_END, v.lastEnd)
         }
 
     var lastTriggerDay: LocalDate?
@@ -142,6 +146,8 @@ class Store(ctx: Context) {
         private const val K_SINCE = "stateSince"
         private const val K_WORK_DAY = "workDay"
         private const val K_WORK_MS = "workClosedMs"
+        private const val K_WORK_BREAK = "workBreakMs"
+        private const val K_WORK_LAST_END = "workLastEnd"
         private const val K_LAST_DAY = "lastTriggerDay"
         private const val K_LAST_INFO = "lastTriggerInfo"
         private const val K_DETECTING = "detectingUntil"

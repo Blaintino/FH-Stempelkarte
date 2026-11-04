@@ -79,6 +79,7 @@ class StatusProvider : ContentProvider() {
             colorIn = ctx.getColor(R.color.widget_in),
             workClosedMs = WorkTime.closedToday(store.workDay, now),
             workRunningSince = WorkTime.runningSince(store.state, store.stateSince, now),
+            workBreakMs = WorkTime.breaksToday(store.workDay, now),
         )
         // Projektion wird ignoriert: immer alle Spalten, Leser greifen per Spaltenname zu.
         return MatrixCursor(InteropContract.COLUMNS, 1).apply {

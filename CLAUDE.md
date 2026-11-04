@@ -117,6 +117,11 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   Sitzung über Mitternacht zählt ab 0:00. Über den Provider als `arbeit_heute_ms` +
   `arbeit_laeuft_seit` (zusätzliche Spalten, Version bleibt 1). Die Stempelkarte zeigt sie selbst
   (noch) nicht an.
+- **Pausen nach § 4 ArbZG (Wunsch des Nutzers, 2026-11-04)**: > 6 h → 30 min, > 9 h → 45 min insgesamt
+  (der Nutzer meinte zuerst „bei 10 h“ – gesetzlich sind es 9 h; 10 h ist die Höchstarbeitszeit). Ausloggen
+  ≥ 15 min zählt als genommene Pause (`WorkTime.open` beim Wiedereinloggen, `Day.breakMs`/`lastEnd`).
+  `WorkTime.net` zieht nur die fehlende Pause ab, gleitend (Zeit steht bei 6:00/9:00, kein Sprung). Provider-
+  Spalte `arbeit_pausen_ms`; das Netto rechnet der Leser (Chip) mit derselben Regel.
 
 ## Rahmenbedingungen
 
