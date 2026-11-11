@@ -17,7 +17,7 @@ stehen jeweils dabei; Hintergründe und Details in `CLAUDE.md`.
   Dazu gebaut: Protokoll in der Prüfliste, 5-Min-Prüfung per Alarm im Zeitfenster,
   Prüfliste auf Samsung umgestellt (vorher fälschlich Huawei).
 - [x] 6. Start- und Sperrbildschirm getrennte Hintergründe, Oberfläche untereinander statt
-  Auswahl (2026-10-16).
+  Auswahl (2026-10-16, Release v11; Nutzer: „Wirkt gut“).
 - [x] 7. Widget wieder eingebaut, mit direkten Knöpfen Einloggen/Ausloggen (Entscheidung
   2026-10-19, PR #1).
 - [x] 8. Schnittstelle für eigene Apps (Status-Provider, Broadcast, geschützte Alias), PR #2/#4.
@@ -37,6 +37,13 @@ stehen jeweils dabei; Hintergründe und Details in `CLAUDE.md`.
   über den Provider für Chip)
 - [ ] 14. Klären: „Nie schlafende Apps“ auf dem Samsung eingerichtet? (Empfehlung an den Nutzer)
 - [ ] 15. Klären: erledigte Remote-Branches `claude/*` löschen? (nur nach Rückfrage)
+
+- [ ] 20. **Widget am Gerät bestätigen** (Einloggen/Ausloggen direkt, Farbe wechselt, ZEUS
+  startet) – seit `fhstempelkarte-v14` ohne Rückmeldung des Nutzers.
+- [ ] 21. Klären: Widget nutzt feste Rot/Grün-Farben statt der in den Einstellungen gewählten
+  Hintergrundfarben (Entscheidung des Agenten 2026-10-19, nicht des Nutzers) – so lassen?
+- [ ] 22. Kleinigkeit: überflüssiges `!!` in `Scheduler.kt` (`currentEnd!!`, Compiler-Warnung
+  seit dem ersten Build).
 
 ## Ideen (nur auf Nachfrage)
 

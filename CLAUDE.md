@@ -10,6 +10,7 @@ eingeloggt“ und zeigt eine Meldung. Nach dem Einloggen wird der Hintergrund �
 zurück. Schwester-App von Quälgeist (`Blaintino/Quaelgeist`), Werkzeuge und Muster von dort.
 Funktionen für Nutzer und Dateiübersicht: `README.md`; Schnittstelle für andere Apps: `INTEROP.md`;
 offene Punkte: `TODO.md`.
+Herkunft und ursprüngliche Absprachen (Chat vom 2026-10-14): `docs/auftrag-2026-10-14.md`.
 
 | | |
 |---|---|
@@ -87,6 +88,13 @@ Alles in `app/src/main/java/de/fhstempelkarte/`, Tabelle in `README.md`. Kernpfa
 - Hintergründe: drei Zustände, Start- und Sperrbildschirm getrennt einstellbar, untereinander
   statt Auswahl (2026-10-16). Vor `WallpaperManager.clear()` immer fragen.
 - ZEUS-App wird in der App gewählt, nicht fest eingetragen.
+- ZEUS (ISGUS) ist geschlossen, ohne Nutzer-Schnittstelle: Die App **erkennt nicht**, ob wirklich
+  gestempelt wurde, sie fragt Einloggen/Ausloggen und startet dann ZEUS. Keine Bedienungshilfe
+  (Accessibility) und keine Nutzungsstatistik, um ZEUS-Starts zu erkennen (Wahl des Nutzers,
+  2026-10-14). Nie versuchen, ZEUS-Daten auszulesen oder nachzubauen.
+- Erkennung nur im Zeitfenster (Standard 7–9 Uhr), WLAN **und** Standort zusammen (Idee des
+  Nutzers: Akku sparen, Standort genauer, WLAN als Fallback).
+- Eigene App, nicht Teil von Quälgeist; Verbindung zu Quälgeist erwünscht (siehe unten).
 - Pausen nach § 4 ArbZG mit 9 h (nicht 10 h) – mit dem Nutzer geklärt (2026-11-04).
 - Öffentliche Namen der Schnittstelle (`InteropContract`) nie still ändern, nur ergänzen.
 - Privater Gebrauch, kein Play Store: `USE_EXACT_ALARM` ist deshalb gesetzt.
@@ -208,6 +216,24 @@ Alles in `app/src/main/java/de/fhstempelkarte/`, Tabelle in `README.md`. Kernpfa
 - Der ursprüngliche Auftrag nannte ein Huawei-Handy – falsch, es ist ein Samsung. Hinweise
   in Code-Kommentaren auf „Huawei Health“ betreffen nur das Band.
 
+### Fallen in Cloud-Sessions (claude.ai/code)
+
+- **Kein Android-SDK vorinstalliert.** Commandline-Tools von `dl.google.com` laden, dann
+  `sdkmanager "platforms;android-37.0" "build-tools;37.0.0"` – das Paket heißt
+  `android-37.0`, nicht `android-37`. `sdk.dir` in `local.properties` (steht in `.gitignore`).
+- **Maven Central antwortet aus Cloud-Containern oft mit HTTP 429** (Retry-After viele
+  Stunden). Dann nicht lokal bauen, sondern Branch `claude/<thema>` pushen und das CI-Ergebnis
+  abwarten (CI läuft auf `claude/**`). Ohne lokalen Build Code besonders sorgfältig lesen.
+- Neues GitHub-Repo anlegen geht aus der Cloud nicht (403) – der Nutzer bzw. ein lokaler
+  Agent muss es anlegen.
+- Commits aus der Cloud mit `user.name Claude` / `user.email noreply@anthropic.com`, sonst
+  meldet der Stop-Hook „Unverified“. Nur auf eigenen Branches umschreiben.
+- Flacher Klon: Nach `git push` kennt der Klon den Remote-Branch evtl. nicht, der Stop-Hook
+  meldet dann fälschlich „unpushed“. Mit `git ls-remote origin <branch>` prüfen,
+  ggf. `git update-ref refs/remotes/origin/<branch> HEAD`.
+- GitHub meldet beim Push „This repository moved“: Repo heißt `Blaintino/FH-Stempelkarte`
+  (Groß-/Kleinschreibung), der Push klappt trotzdem.
+
 ## Übergabe-Notizen (Stand 2026-11-11)
 
 - **Letztes Release**: `fhstempelkarte-v23` (2026-11-04, Merge von PR #5 „Pausen nach § 4
@@ -225,7 +251,14 @@ Alles in `app/src/main/java/de/fhstempelkarte/`, Tabelle in `README.md`. Kernpfa
   2. Ist „Nie schlafende Apps“ (Samsung-Akku) für die App eingerichtet?
   3. Soll die Stempelkarte die Arbeitszeit selbst anzeigen (bisher nur für Chip über den Provider)?
   4. Dürfen die erledigten Remote-Branches gelöscht werden?
+  5. Funktioniert das Widget am Gerät, und sollen dort die eigenen Hintergrundfarben statt
+     festem Rot/Grün erscheinen? (`TODO.md` Nr. 20/21)
 - Keine Artifacts/Mockups zu dieser App; die Chip-/Kartei-Mockups gehören zu anderen Projekten.
+- Der ursprüngliche Auftrag und die Absprachen aus dem Gründungs-Chat liegen jetzt in
+  `docs/auftrag-2026-10-14.md` (vorher nur im Chat bzw. im Cloud-Container).
+- Widget (PR #1, Release `fhstempelkarte-v14`) und getrennte Start-/Sperr-Hintergründe
+  (`fhstempelkarte-v11`) entstanden in einer Cloud-Session ohne Gerät. Rückmeldung des
+  Nutzers zu den Hintergründen: „Wirkt gut“. Zum Widget gibt es keine Rückmeldung.
 
 ## Mögliche nächste Schritte (nur auf Nachfrage)
 
