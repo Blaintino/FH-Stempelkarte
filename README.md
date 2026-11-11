@@ -44,10 +44,13 @@ Signaturschlüssel. Details in [`INTEROP.md`](INTEROP.md).
 ## Einrichten
 
 1. Prüfliste durchgehen: Benachrichtigungen, exakte Alarme, Standort „genau“ und
-   **„Immer erlauben“**, Akku-Optimierung aus, auf Huawei App-Start „manuell verwalten“.
+   **„Immer erlauben“**, Akku-Optimierung aus, auf Samsung zusätzlich Akku →
+   Hintergrundnutzungslimits → „Nie schlafende Apps“.
 2. ZEUS-App wählen (Liste aller Apps, Kandidaten mit „zeus“/„isgus“ stehen oben).
 3. Hintergründe einstellen, mindestens *Normal* wählen.
-4. An der FH: *Aktuelles WLAN übernehmen* und/oder *Aktuellen Standort übernehmen*.
+4. An der FH: *Aktuelles WLAN übernehmen* **und** *Aktuellen Standort übernehmen*. WLAN allein
+   reicht oft nicht: Samsung verbindet sich bei ausgeschaltetem Bildschirm meist erst beim
+   Entsperren mit dem WLAN.
 
 ## Installieren und aktualisieren
 
