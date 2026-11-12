@@ -97,6 +97,19 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   vermutlich aus/kein FH-Standort). ZEUS-Paket auf dem Gerät: `de.isgus.zeusmobile`.
   USB/adb ist inzwischen möglich (Gerät `SM-S948B`).
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
+- **Akzentfarbe im Kartei Launcher (Wunsch des Nutzers, 2026-11-12, umgesetzt)**: die Stempelkarte
+  nutzt die *offene* Schnittstelle des eigenen Launchers (`Blaintino/Launcher`, `SCHNITTSTELLE.md`
+  dort). `KarteiSchnittstelle.kt` ist eine **Kopie** des Launcher-Vertrags (nur `package` geändert;
+  Namen nie abweichen lassen, `KarteiAkzentTest.vertragWieImLauncher`). `KarteiAkzent.senden`:
+  expliziter Broadcast `AKZENT_SETZEN` (Extra `farbe`) bzw. `AKZENT_ZURUECKNEHMEN` (NEUTRAL oder
+  Option aus), ab Android 14 mit `setShareIdentityEnabled(true)` (Launcher zeigt den App-Namen).
+  Gesendet nur beim **echten** Zustandswechsel in `setState` (sonst überstimmt ein erneutes Setzen
+  „eigene Farbe verwenden“ im Launcher), aus `BootReceiver` bei Boot/Update und bei Änderung der
+  Einstellung (`KarteiUi.kt`, freier HSV-Farbwähler; beim Ausschalten wird zurückgenommen).
+  Option aus: keine Sendung bei Zustandswechseln. Farben bewusst selbst gewählt, nicht die
+  Rot/Grün-Hintergrundfarben. Manifest: `uses-permission de.blaintino.kartei.permission.AKZENT`
+  (signature) + `<queries>`-Paket. **Reihenfolge:** Launcher vor der Stempelkarte installieren.
+  Nicht gewünscht: Zustand/Arbeitszeit im Launcher. Auf dem Gerät noch nicht getestet.
 - **Schnittstelle für eigene Apps (Wunsch des Nutzers, 2026-11-03)**: Vorbereitung, damit das
   Widget der Kalender-App Chip (`Blaintino/Chip`) perspektivisch die Stempelkarte anzeigt und
   bedient; Gestaltung dort noch offen, Chip noch nicht angepasst. Vertrag in `InteropContract.kt`

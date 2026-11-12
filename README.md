@@ -32,6 +32,9 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
   Bild). Für Start- und/oder Sperrbildschirm, auf Wunsch mit eigenem Bild bzw. eigener Farbe
   für den Sperrbildschirm (sonst wie Startbildschirm). Änderungen am gerade aktiven Zustand
   werden sofort übernommen.
+- **Akzentfarbe im Kartei Launcher** (eigener Launcher, optional): je Zustand eine frei
+  gewählte Farbe für *Nicht eingeloggt* und *Eingeloggt*; bei *Neutral* gilt dort wieder die
+  eigene Farbe. Den Launcher **vor** dieser App installieren/aktualisieren.
 - **Prüfliste** (in den Einstellungen) mit Links in die Systemeinstellungen und *Test auslösen*.
 
 Hinweis: Für den pünktlichen Start nutzt die App einen Wecker-Alarm. Deshalb zeigt Android
@@ -92,6 +95,7 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `Store.kt` | SharedPreferences (Einstellungen + Zustand) |
 | `WorkTime.kt` | Arbeitszeit pro Tag (rein, getestet) |
 | `InteropContract.kt`, `Interop.kt` | Schnittstelle für eigene Apps (Chip-Widget), siehe `INTEROP.md` |
+| `KarteiSchnittstelle.kt`, `KarteiAkzent.kt`, `KarteiUi.kt` | Akzentfarbe im Kartei Launcher (Vertrag kopiert aus `Blaintino/Launcher`, Senden, Einstellungen mit Farbwähler) |
 | `Ui.kt`, `Reliability.kt` | Einstellungen, Prüfliste |
 
 ## Lizenz

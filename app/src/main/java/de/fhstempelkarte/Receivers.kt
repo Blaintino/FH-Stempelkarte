@@ -73,6 +73,10 @@ class BootReceiver : BroadcastReceiver() {
             runCatching { StempelWidget.updateAll(ctx) }
             // Andere Apps (Chip-Widget) nach Neustart/Update den aktuellen Stand wissen lassen.
             runCatching { Interop.notifyChanged(ctx) }
+            // Nach Update/Neustart: Launcher die Farbe zum aktuellen Zustand wissen lassen.
+            if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+                runCatching { KarteiAkzent.senden(ctx) }
+            }
         }
     }
 

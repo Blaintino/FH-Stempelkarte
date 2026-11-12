@@ -23,6 +23,10 @@ data class Config(
     val colorInLock: Int? = null,
     val onHome: Boolean = true,
     val onLock: Boolean = true,
+    /** Akzentfarbe im Kartei Launcher setzen ([KarteiAkzent]); Farben frei gewählt. */
+    val karteiAkzent: Boolean = false,
+    val karteiOut: Int = KARTEI_OUT,
+    val karteiIn: Int = KARTEI_IN,
 ) {
     val hasLocation get() = lat != null && lon != null
 
@@ -35,6 +39,8 @@ data class Config(
     companion object {
         const val COLOR_OUT = 0xFFC62828.toInt()
         const val COLOR_IN = 0xFF2E7D32.toInt()
+        const val KARTEI_OUT = 0xFFFF7043.toInt()
+        const val KARTEI_IN = 0xFF66BB6A.toInt()
     }
 }
 
@@ -117,6 +123,9 @@ class Store(ctx: Context) {
             colorInLock = if (p.contains("colorInLock")) p.getInt("colorInLock", 0) else null,
             onHome = p.getBoolean("onHome", true),
             onLock = p.getBoolean("onLock", true),
+            karteiAkzent = p.getBoolean("karteiAkzent", false),
+            karteiOut = p.getInt("karteiOut", Config.KARTEI_OUT),
+            karteiIn = p.getInt("karteiIn", Config.KARTEI_IN),
         )
         set(c) = put {
             putInt("start", c.window.startMinute)
@@ -135,6 +144,9 @@ class Store(ctx: Context) {
             c.colorInLock?.let { putInt("colorInLock", it) } ?: remove("colorInLock")
             putBoolean("onHome", c.onHome)
             putBoolean("onLock", c.onLock)
+            putBoolean("karteiAkzent", c.karteiAkzent)
+            putInt("karteiOut", c.karteiOut)
+            putInt("karteiIn", c.karteiIn)
         }
 
     fun update(change: (Config) -> Config) {
