@@ -133,6 +133,25 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 
 ## Mögliche nächste Schritte (nur auf Nachfrage)
 
+- **Akzentfarbe im Kartei Launcher setzen (abgestimmt mit dem Nutzer, 2026-11-12)** – die
+  Stempelkarte wird erste Nutzerin einer *offenen* Schnittstelle des eigenen Launchers „Kartei
+  Launcher“ (`Blaintino/Launcher`, App-ID `de.blaintino.kartei`, dort `TODO.md` Punkte 26–28):
+  - Einstellungen: „Akzentfarbe im Kartei Launcher“ an/aus und je Zustand eine **selbst
+    gewählte** Farbe für *Nicht eingeloggt* und *Eingeloggt*, mit **freier Farbwahl** (nicht
+    automatisch die Rot/Grün-Widgetfarben – die gehen auf dem gleichfarbigen Hintergrund unter).
+  - Senden aus `Stempel.setState` (beim echten Wechsel) und aus `BootReceiver` (wie
+    `Interop.notifyChanged`): expliziter Broadcast an `de.blaintino.kartei`, Aktion
+    `de.blaintino.kartei.action.AKZENT_SETZEN` mit Extra `farbe` (ARGB-Int); bei `NEUTRAL` bzw.
+    ausgeschalteter Option `…AKZENT_ZURUECKNEHMEN`. `BroadcastOptions.setShareIdentityEnabled(true)`
+    setzen, damit der Launcher die Stempelkarte als Absender erkennt und anzeigt („Akzent wurde
+    geändert von: FH Stempelkarte“). Ist der Launcher nicht installiert: nichts tun.
+  - Manifest: `uses-permission de.blaintino.kartei.permission.AKZENT` (signature, gleicher
+    Keystore) und `<queries><package android:name="de.blaintino.kartei" /></queries>`. Die genauen
+    Namen kommen aus dem Vertrag des Launchers (`KarteiSchnittstelle.kt`/`SCHNITTSTELLE.md` im
+    Launcher-Repo, beim Bau dort anlegen) – Datei hierher kopieren, Namen nicht abweichen lassen.
+  - **Reihenfolge:** erst den Launcher mit der Schnittstelle bauen und installieren, danach die
+    Stempelkarte aktualisieren – sonst erteilt Android die `signature`-Berechtigung nicht.
+  - Nicht gewünscht: Zustand/Arbeitszeit/Ein-/Ausloggen im Launcher anzeigen (läuft über Widgets).
 - **Chip-Widget** an die Schnittstelle anbinden (in `Blaintino/Chip`, siehe Skizze in `INTEROP.md`).
 - **Quälgeist**: z. B. „30 Min nach Auslösen noch nicht eingeloggt → Quälgeist nervt, bis
   angemeldet“. Der Broadcast `ZUSTAND_GEAENDERT` geht schon an `de.quaelgeist`/`.beta`;
