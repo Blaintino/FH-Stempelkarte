@@ -1,33 +1,103 @@
 # FH Stempelkarte – Hinweise für Claude Code
 
-Android-App (Kotlin, Jetpack Compose, minSdk 26, targetSdk 37): erinnert per Hintergrundbild
-ans Einstempeln in ZEUS an der FH. Schwester-App von Quälgeist (`Blaintino/Quaelgeist`),
-Werkzeuge und Muster von dort übernommen. Funktionen und Dateiübersicht in `README.md`.
+## Was die App ist
 
-## Status und Werkzeuge
+Android-App (Kotlin, Jetpack Compose, minSdk 26, targetSdk/compileSdk 37 = Android 17): erinnert
+per **Hintergrundbild** ans Einstempeln in **ZEUS** (Zeiterfassung der FH, App
+`de.isgus.zeusmobile`). Morgens im Zeitfenster (Standard Mo–Fr 7:00–9:00) erkennt sie über
+FH-WLAN und/oder Standort, dass der Nutzer an der FH ist, setzt den Hintergrund „Nicht
+eingeloggt“ und zeigt eine Meldung. Nach dem Einloggen wird der Hintergrund „Eingeloggt“, nach dem Ausloggen kommt das eigene Bild
+zurück. Schwester-App von Quälgeist (`Blaintino/Quaelgeist`), Werkzeuge und Muster von dort.
+Funktionen für Nutzer und Dateiübersicht: `README.md`; Schnittstelle für andere Apps: `INTEROP.md`;
+offene Punkte: `TODO.md`.
+Herkunft und ursprüngliche Absprachen (Chat vom 2026-10-14): `docs/auftrag-2026-10-14.md`.
 
-Stand 2026-10-14: kompiliert, Lint ohne echte Befunde (nur Versions-Hinweise,
-`InlinedApi` für die Alarm-Berechtigungs-Aktion – harmlos, wie in Quälgeist), 22 Unit-Tests
-grün (`TimeWindowTest`, `StateLogicTest`, `SsidTest`, `WallpaperLayoutTest`; Zeitzone fest
-`Europe/Berlin`). **Auf dem Gerät noch nicht getestet.** Der Nutzer installiert über
-Obtainium, nicht per USB/adb. Erstes Release `fhstempelkarte-v2` (CI grün, signiert). Offen zu prüfen: App-Start/Meldung →
-Auswahl → ZEUS startet und Hintergrund wechselt; WLAN- und Geofence-Auslösung im (vorgezogenen) Zeitfenster; nach Neustart neu
-geplante Alarme; ob Huawei den Sperrbildschirm-Hintergrund übernimmt.
-ZEUS-Paketname ist unbekannt (wird in der App aus den installierten Apps gewählt; Kandidaten
-mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
+| | |
+|---|---|
+| Repo | `Blaintino/FH-Stempelkarte` (öffentlich, GPL-3.0) |
+| App-ID | `de.fhstempelkarte`, Debug `de.fhstempelkarte.debug` (läuft daneben, Name „FH Stempelkarte (Debug)“) |
+| Release-Tag/-Titel | `fhstempelkarte-v<run_number>`, APK `FH-Stempelkarte-<run_number>.apk` |
+| Installation | Obtainium mit URL `https://github.com/Blaintino/FH-Stempelkarte`, Filter `^fhstempelkarte-v`; alternativ USB/adb (seit 2026-10-16 möglich) |
+| Gerät | Samsung Galaxy S26 Ultra (`SM-S948B`), Android 17. **Nicht Huawei** – der ursprüngliche Auftrag sprach fälschlich davon; nur das Fitnessband ist von Huawei (Huawei Health). |
+
+## Aufbau des Codes
+
+Alles in `app/src/main/java/de/fhstempelkarte/`, Tabelle in `README.md`. Kernpfade:
+
+- **Startpunkt**: `ZeusActivity` (`Zeus.kt`, Launcher-Activity, durchsichtiger Dialog) →
+  *Einloggen*/*Ausloggen* → `Stempel.setState` → ZEUS starten. `MainActivity` + `Ui.kt` =
+  nur Einstellungen; `Reliability.kt` = Prüfliste mit Test und Protokoll.
+- **Zustand**: `StateLogic.kt` (Zustände + Auslöse-Regel), `Store.kt` (SharedPreferences),
+  `Stempel.kt` (`setState` – einziger Ort für Wechsel, `maybeTrigger`).
+- **Hintergrund-Erkennung**: `Scheduler.kt` (Alarme Fensterbeginn/-ende/5-Min-Prüfung,
+  `planAll`), `Detector.kt` (Geofence, Standort-Updates, WLAN-Callback, SSID), `Receivers.kt`,
+  `TimeWindow.kt`, `Ssid.kt`, `Geo.kt`, `EventLog.kt` (Protokoll).
+- **Hintergründe**: `Wallpapers.kt` (setzen, erzeugen, importieren), `WallpaperPlan.kt`
+  (Start/Sperre), `WallpaperLayout.kt` (Text auf erzeugten Bildern).
+- **Sonstiges**: `Notifier.kt` (Meldung), `Widget.kt` (Startbildschirm-Widget),
+  `WorkTime.kt` (Arbeitszeit/Pausen), `InteropContract.kt` + `Interop.kt` (Schnittstelle),
+  `AppScope.kt`.
+- Reine Logik (ohne Android) liegt in eigenen Dateien mit Unit-Tests in
+  `app/src/test/java/de/fhstempelkarte/` (44 Tests, Zeitzone fest `Europe/Berlin`).
+  Neue Logik möglichst genauso: rein + getestet, Android-Teil dünn.
+
+## Bauen und testen
 
 - Toolchain wie Quälgeist: Gradle 9.8, AGP 9.4 mit eingebautem Kotlin (kein
   `org.jetbrains.kotlin.android`, nur `org.jetbrains.kotlin.plugin.compose`), Versionen in
-  `gradle/libs.versions.toml`, JDK 21.
-- Befehle: `./gradlew testDebugUnitTest lintDebug assembleDebug`.
-- `.github/workflows/build-apk.yml`: Tests + Lint, signierte Release-APK aus den Secrets
-  `ANDROID_KEYSTORE_BASE64` usw.; nur auf `main` mit Secrets ein Release
-  `fhstempelkarte-v<run_number>` (Obtainium filtert auf `^fhstempelkarte-v`). Ohne Secrets
-  Debug-APK mit Warnung. Nie auf Debug-Signatur umstellen.
-- **Gleicher Keystore wie Quälgeist** (Voraussetzung für die spätere
-  `signature`-Berechtigung, siehe unten). Nie einen Keystore einchecken oder neu erzeugen.
-- `versionCode` aus `VERSION_CODE`; Debug: App-ID `de.fhstempelkarte.debug`, Name über
-  Manifest-Platzhalter `appLabel`.
+  `gradle/libs.versions.toml`, JDK 21. Abhängigkeiten nur Compose, Core-KTX,
+  Activity-Compose, Coroutines.
+- Befehl: `./gradlew testDebugUnitTest lintDebug assembleDebug`. Lint hat nur bekannte
+  Warnungen (Versions-Hinweise, `InlinedApi` in `Receivers.kt`, `UseKtx` in `Wallpapers.kt`) –
+  keine Fehler einführen.
+- Auf dem Mac des Nutzers: JDK = Android Studios JBR
+  (`/Applications/Android Studio.app/Contents/jbr/Contents/Home`), SDK `~/Library/Android/sdk`.
+  Die Variablen stehen in `~/.zshrc`, werden von nicht-interaktiven Shells (Agent-Bash) aber
+  **nicht** geladen – `JAVA_HOME`/`ANDROID_HOME`/`PATH` (für `adb`) im Befehl selbst setzen.
+- Gerät per USB: `adb devices`; Debug-App mit `./gradlew installDebug`. Ein signiertes
+  Release lässt sich per `gh release download` + `adb install -r` als Update einspielen
+  (gleicher Schlüssel, Daten bleiben).
+- Cloud-Sessions haben weder Gerät noch Emulator: dort nur bauen und Unit-Tests.
+
+## Ablauf Branch → PR → Merge → Release
+
+1. Arbeit auf einem Branch `claude/<thema>` (nicht direkt auf `main`; nur die allerersten
+   Commits bis 2026-10-16 gingen direkt auf `main`).
+2. Push → CI (`.github/workflows/build-apk.yml`) läuft auch auf `claude/**`: Tests, Lint,
+   signierte APK als Artefakt, **kein** Release.
+3. PR nach `main`, der Nutzer prüft/merged (bisher PRs #1–#5, alle gemergt).
+4. Merge auf `main` → CI baut erneut und legt automatisch das Release
+   `fhstempelkarte-v<run_number>` an → Obtainium findet das Update.
+- Signatur: Secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+  `ANDROID_KEY_PASSWORD` (gesetzt). **Gleicher Keystore wie Quälgeist** (nötig für die
+  `signature`-Berechtigung der Schnittstelle). Keystore liegt nur lokal beim Nutzer – nie
+  einchecken, nie neu erzeugen, Passwörter nie selbst eintippen (der Nutzer setzt sie).
+  Ohne Secrets baut CI eine Debug-APK mit Warnung; nie auf Debug-Signatur „umstellen“.
+- `versionCode` = `VERSION_CODE` (= `github.run_number`), sonst lehnt Android Updates ab.
+
+## Feste Entscheidungen des Nutzers (nicht ohne Rückfrage ändern)
+
+- Nur lokal: keine Google-Dienste (kein Play Services, kein WorkManager, kein Glance), kein
+  Netzwerk, keine Tracker, keine Konten. Oberfläche und Texte deutsch.
+- **Keine Erinnerung zum Ausloggen/Gehen** – der grüne Hintergrund ist die Erinnerung.
+- Ablauf: Meldung antippen oder App öffnen → Auswahl → ZEUS (2026-10-14). Das Widget kam
+  danach auf Wunsch zurück (2026-10-19), mit direkten Knöpfen.
+- Höchstens einmal am Tag auslösen, nur aus *Neutral*; Erinnerung als **eine** Meldung, keine
+  Wiederholung, kein Vollbild.
+- Standort- und WLAN-Erkennung einzeln schaltbar, FH-Standort löschbar (2026-10-14).
+- Hintergründe: drei Zustände, Start- und Sperrbildschirm getrennt einstellbar, untereinander
+  statt Auswahl (2026-10-16). Vor `WallpaperManager.clear()` immer fragen.
+- ZEUS-App wird in der App gewählt, nicht fest eingetragen.
+- ZEUS (ISGUS) ist geschlossen, ohne Nutzer-Schnittstelle: Die App **erkennt nicht**, ob wirklich
+  gestempelt wurde, sie fragt Einloggen/Ausloggen und startet dann ZEUS. Keine Bedienungshilfe
+  (Accessibility) und keine Nutzungsstatistik, um ZEUS-Starts zu erkennen (Wahl des Nutzers,
+  2026-10-14). Nie versuchen, ZEUS-Daten auszulesen oder nachzubauen.
+- Erkennung nur im Zeitfenster (Standard 7–9 Uhr), WLAN **und** Standort zusammen (Idee des
+  Nutzers: Akku sparen, Standort genauer, WLAN als Fallback).
+- Eigene App, nicht Teil von Quälgeist; Verbindung zu Quälgeist erwünscht (siehe unten).
+- Pausen nach § 4 ArbZG mit 9 h (nicht 10 h) – mit dem Nutzer geklärt (2026-11-04).
+- Öffentliche Namen der Schnittstelle (`InteropContract`) nie still ändern, nur ergänzen.
+- Privater Gebrauch, kein Play Store: `USE_EXACT_ALARM` ist deshalb gesetzt.
 
 ## Verhalten, das erhalten bleiben muss
 
@@ -136,13 +206,72 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   `WorkTime.net` zieht nur die fehlende Pause ab, gleitend (Zeit steht bei 6:00/9:00, kein Sprung). Provider-
   Spalte `arbeit_pausen_ms`; das Netto rechnet der Leser (Chip) mit derselben Regel.
 
-## Rahmenbedingungen
+## Gelernte Fallen
 
-- Nur lokal: keine Google-Dienste, kein Netzwerk, keine Tracker, keine Konten.
-- Abhängigkeiten nur Compose, Core-KTX, Activity-Compose, Coroutines.
-- Oberfläche und Texte deutsch. Öffentliches Repo, GPL-3.0.
-- Privater Gebrauch (`USE_EXACT_ALARM` gesetzt). Handy: **Samsung Galaxy S26** (nicht Huawei –
-  der ursprüngliche Auftrag sprach fälschlich von Huawei; Huawei Health/Band gibt es trotzdem).
+- **Samsung verbindet WLAN bei ausgeschaltetem Bildschirm oft erst beim Entsperren** (per adb
+  belegt, 2026-10-16: eduroam erst 7:23:54). WLAN allein reicht nicht, Standort-Erkennung als
+  zweiten Auslöser eingeschaltet lassen. Der „Fehler“ beim ersten Test war: Standort-Erkennung
+  aus, Handy noch nicht im WLAN.
+- Vor Fehlersuche am Code erst das **Protokoll** (Prüfliste) bzw. `adb shell dumpsys alarm |
+  grep fhstempelkarte`, `dumpsys location`, `dumpsys wifi` ansehen.
+- `PendingIntent`s für Proximity-Alert, Standort-Updates und Netzwerk-Callback müssen
+  `FLAG_MUTABLE` sein, sonst fehlen die System-Extras.
+- SSID im Hintergrund: `NetworkCapabilities.transportInfo` ist ab Android 12 geschwärzt;
+  Fallback `WifiManager.connectionInfo` braucht „Standort: Immer erlauben“.
+- Launcher-Verknüpfungen über statische `shortcuts.xml` kennen die Debug-App-ID nicht – nur
+  dynamisch (wurde später ganz entfernt).
+- `signature`-Berechtigung muss `${applicationId}` im Namen tragen, sonst Installationskonflikt
+  zwischen Release- und (anders signierter) Debug-App.
+- In KDoc-Kommentaren kein `*/` im Text (z. B. Pfade mit `/*`): schließt den Kommentar
+  vorzeitig (Bug in `Widget.kt`, Commit `1ccd7c8`).
+- CI prüft nur, ob `ANDROID_KEYSTORE_BASE64` gesetzt ist: fehlen die übrigen Secrets, schlägt
+  der Release-Build fehl (beim ersten Lauf passiert), statt auf Debug auszuweichen.
+- Der ursprüngliche Auftrag nannte ein Huawei-Handy – falsch, es ist ein Samsung. Hinweise
+  in Code-Kommentaren auf „Huawei Health“ betreffen nur das Band.
+
+### Fallen in Cloud-Sessions (claude.ai/code)
+
+- **Kein Android-SDK vorinstalliert.** Commandline-Tools von `dl.google.com` laden, dann
+  `sdkmanager "platforms;android-37.0" "build-tools;37.0.0"` – das Paket heißt
+  `android-37.0`, nicht `android-37`. `sdk.dir` in `local.properties` (steht in `.gitignore`).
+- **Maven Central antwortet aus Cloud-Containern oft mit HTTP 429** (Retry-After viele
+  Stunden). Dann nicht lokal bauen, sondern Branch `claude/<thema>` pushen und das CI-Ergebnis
+  abwarten (CI läuft auf `claude/**`). Ohne lokalen Build Code besonders sorgfältig lesen.
+- Neues GitHub-Repo anlegen geht aus der Cloud nicht (403) – der Nutzer bzw. ein lokaler
+  Agent muss es anlegen.
+- Commits aus der Cloud mit `user.name Claude` / `user.email noreply@anthropic.com`, sonst
+  meldet der Stop-Hook „Unverified“. Nur auf eigenen Branches umschreiben.
+- Flacher Klon: Nach `git push` kennt der Klon den Remote-Branch evtl. nicht, der Stop-Hook
+  meldet dann fälschlich „unpushed“. Mit `git ls-remote origin <branch>` prüfen,
+  ggf. `git update-ref refs/remotes/origin/<branch> HEAD`.
+- GitHub meldet beim Push „This repository moved“: Repo heißt `Blaintino/FH-Stempelkarte`
+  (Groß-/Kleinschreibung), der Push klappt trotzdem.
+
+## Übergabe-Notizen (Stand 2026-11-11)
+
+- **Letztes Release**: `fhstempelkarte-v23` (2026-11-04, Merge von PR #5 „Pausen nach § 4
+  ArbZG“, Commit `fe3e287`). CI auf `main` grün.
+- **Branches**: alle Arbeit ist in `main`. Die Remote-Branches `claude/widget`,
+  `claude/interop-widget`, `claude/arbeitszeit`, `claude/interop-protokoll`, `claude/pausen`
+  (gemergt) und `claude/sperre-start-getrennt` (Commits liegen direkt auf `main`) sind
+  erledigt und könnten gelöscht werden – nur nach Rückfrage. Dieser Doku-Stand liegt auf
+  `claude/uebergabe-doku` (PR offen, nicht gemergt).
+- **Nichts halbfertig im Code** bekannt. Offen sind Gerätetests und Folge-Wünsche, siehe `TODO.md`.
+- **Offene Fragen an den Nutzer**:
+  1. Hat die Hintergrund-Erkennung seit dem Wiedereinschalten der Standort-Erkennung
+     (Test war für Montag 2026-10-19 geplant) zuverlässig ausgelöst? Eine Rückmeldung dazu
+     fehlt in den Notizen; Protokoll in der Prüfliste ansehen lassen.
+  2. Ist „Nie schlafende Apps“ (Samsung-Akku) für die App eingerichtet?
+  3. Soll die Stempelkarte die Arbeitszeit selbst anzeigen (bisher nur für Chip über den Provider)?
+  4. Dürfen die erledigten Remote-Branches gelöscht werden?
+  5. Funktioniert das Widget am Gerät, und sollen dort die eigenen Hintergrundfarben statt
+     festem Rot/Grün erscheinen? (`TODO.md` Nr. 20/21)
+- Keine Artifacts/Mockups zu dieser App; die Chip-/Kartei-Mockups gehören zu anderen Projekten.
+- Der ursprüngliche Auftrag und die Absprachen aus dem Gründungs-Chat liegen jetzt in
+  `docs/auftrag-2026-10-14.md` (vorher nur im Chat bzw. im Cloud-Container).
+- Widget (PR #1, Release `fhstempelkarte-v14`) und getrennte Start-/Sperr-Hintergründe
+  (`fhstempelkarte-v11`) entstanden in einer Cloud-Session ohne Gerät. Rückmeldung des
+  Nutzers zu den Hintergründen: „Wirkt gut“. Zum Widget gibt es keine Rückmeldung.
 
 ## Mögliche nächste Schritte (nur auf Nachfrage)
 
