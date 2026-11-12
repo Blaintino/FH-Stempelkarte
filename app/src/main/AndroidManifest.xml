@@ -24,6 +24,10 @@
         android:protectionLevel="signature" />
     <uses-permission android:name="${applicationId}.permission.INTEROP" />
 
+    <!-- Akzentfarbe im eigenen Kartei Launcher setzen (dessen offene Schnittstelle, signature).
+         Der Launcher muss vor dieser App installiert sein, sonst wird sie nicht erteilt. -->
+    <uses-permission android:name="de.blaintino.kartei.permission.AKZENT" />
+
     <uses-feature android:name="android.hardware.location" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.location.network" android:required="false" />
@@ -39,6 +43,8 @@
         <package android:name="de.blaintino.chip" />
         <package android:name="de.quaelgeist" />
         <package android:name="de.quaelgeist.beta" />
+        <!-- Kartei Launcher: Empfänger der Akzentfarbe (KarteiAkzent). -->
+        <package android:name="de.blaintino.kartei" />
     </queries>
 
     <application

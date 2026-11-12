@@ -236,6 +236,7 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
             }
         }
         item { WallpaperCard(cfg, hasOriginal, ::save) }
+        item { KarteiCard(cfg, ::save) }
     }
 }
 

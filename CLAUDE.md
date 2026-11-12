@@ -97,6 +97,19 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   vermutlich aus/kein FH-Standort). ZEUS-Paket auf dem Gerät: `de.isgus.zeusmobile`.
   USB/adb ist inzwischen möglich (Gerät `SM-S948B`).
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
+- **Akzentfarbe im Kartei Launcher (Wunsch des Nutzers, 2026-11-12, umgesetzt)**: die Stempelkarte
+  nutzt die *offene* Schnittstelle des eigenen Launchers (`Blaintino/Launcher`, `SCHNITTSTELLE.md`
+  dort). `KarteiSchnittstelle.kt` ist eine **Kopie** des Launcher-Vertrags (nur `package` geändert;
+  Namen nie abweichen lassen, `KarteiAkzentTest.vertragWieImLauncher`). `KarteiAkzent.senden`:
+  expliziter Broadcast `AKZENT_SETZEN` (Extra `farbe`) bzw. `AKZENT_ZURUECKNEHMEN` (NEUTRAL oder
+  Option aus), ab Android 14 mit `setShareIdentityEnabled(true)` (Launcher zeigt den App-Namen).
+  Gesendet nur beim **echten** Zustandswechsel in `setState` (sonst überstimmt ein erneutes Setzen
+  „eigene Farbe verwenden“ im Launcher), aus `BootReceiver` bei Boot/Update und bei Änderung der
+  Einstellung (`KarteiUi.kt`, freier HSV-Farbwähler; beim Ausschalten wird zurückgenommen).
+  Option aus: keine Sendung bei Zustandswechseln. Farben bewusst selbst gewählt, nicht die
+  Rot/Grün-Hintergrundfarben. Manifest: `uses-permission de.blaintino.kartei.permission.AKZENT`
+  (signature) + `<queries>`-Paket. **Reihenfolge:** Launcher vor der Stempelkarte installieren.
+  Nicht gewünscht: Zustand/Arbeitszeit im Launcher. Auf dem Gerät noch nicht getestet.
 - **Schnittstelle für eigene Apps (Wunsch des Nutzers, 2026-11-03)**: Vorbereitung, damit das
   Widget der Kalender-App Chip (`Blaintino/Chip`) perspektivisch die Stempelkarte anzeigt und
   bedient; Gestaltung dort noch offen, Chip noch nicht angepasst. Vertrag in `InteropContract.kt`
@@ -133,25 +146,6 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
 
 ## Mögliche nächste Schritte (nur auf Nachfrage)
 
-- **Akzentfarbe im Kartei Launcher setzen (abgestimmt mit dem Nutzer, 2026-11-12)** – die
-  Stempelkarte wird erste Nutzerin einer *offenen* Schnittstelle des eigenen Launchers „Kartei
-  Launcher“ (`Blaintino/Launcher`, App-ID `de.blaintino.kartei`, dort `TODO.md` Punkte 26–28):
-  - Einstellungen: „Akzentfarbe im Kartei Launcher“ an/aus und je Zustand eine **selbst
-    gewählte** Farbe für *Nicht eingeloggt* und *Eingeloggt*, mit **freier Farbwahl** (nicht
-    automatisch die Rot/Grün-Widgetfarben – die gehen auf dem gleichfarbigen Hintergrund unter).
-  - Senden aus `Stempel.setState` (beim echten Wechsel) und aus `BootReceiver` (wie
-    `Interop.notifyChanged`): expliziter Broadcast an `de.blaintino.kartei`, Aktion
-    `de.blaintino.kartei.action.AKZENT_SETZEN` mit Extra `farbe` (ARGB-Int); bei `NEUTRAL` bzw.
-    ausgeschalteter Option `…AKZENT_ZURUECKNEHMEN`. `BroadcastOptions.setShareIdentityEnabled(true)`
-    setzen, damit der Launcher die Stempelkarte als Absender erkennt und anzeigt („Akzent wurde
-    geändert von: FH Stempelkarte“). Ist der Launcher nicht installiert: nichts tun.
-  - Manifest: `uses-permission de.blaintino.kartei.permission.AKZENT` (signature, gleicher
-    Keystore) und `<queries><package android:name="de.blaintino.kartei" /></queries>`. Die genauen
-    Namen kommen aus dem Vertrag des Launchers (`KarteiSchnittstelle.kt`/`SCHNITTSTELLE.md` im
-    Launcher-Repo, beim Bau dort anlegen) – Datei hierher kopieren, Namen nicht abweichen lassen.
-  - **Reihenfolge:** erst den Launcher mit der Schnittstelle bauen und installieren, danach die
-    Stempelkarte aktualisieren – sonst erteilt Android die `signature`-Berechtigung nicht.
-  - Nicht gewünscht: Zustand/Arbeitszeit/Ein-/Ausloggen im Launcher anzeigen (läuft über Widgets).
 - **Chip-Widget** an die Schnittstelle anbinden (in `Blaintino/Chip`, siehe Skizze in `INTEROP.md`).
 - **Quälgeist**: z. B. „30 Min nach Auslösen noch nicht eingeloggt → Quälgeist nervt, bis
   angemeldet“. Der Broadcast `ZUSTAND_GEAENDERT` geht schon an `de.quaelgeist`/`.beta`;

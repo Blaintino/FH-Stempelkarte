@@ -26,6 +26,7 @@ object Stempel {
             }
             store.stateSince = System.currentTimeMillis()
         }
+        val changed = store.state != state
         store.state = state
         if (state == StempelState.NICHT_EINGELOGGT) {
             runCatching { Notifier.show(ctx) }
@@ -34,6 +35,8 @@ object Stempel {
         }
         runCatching { StempelWidget.updateAll(ctx) }
         runCatching { Interop.notifyChanged(ctx) }
+        // Nur beim echten Wechsel: sonst überstimmt ein erneutes Setzen „eigene Farbe“ im Launcher.
+        if (changed) runCatching { KarteiAkzent.senden(ctx) }
         runCatching { Scheduler.planAll(ctx) }
         return Wallpapers.apply(ctx, state, clearIfNoOriginal)
     }
