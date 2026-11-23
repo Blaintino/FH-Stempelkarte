@@ -311,34 +311,11 @@ private fun WindowCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
 @Composable
 private fun TransponderCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
     val ctx = LocalContext.current
-    val next = remember(cfg) { Transponder.next(cfg) }
     SectionCard("Transponder aufladen") {
-        EnableRow("Eigene Erinnerung", cfg.transponderOn) { v -> save { it.copy(transponderOn = v) } }
-        OutlinedButton(onClick = {
-            TimePickerDialog(ctx, { _, h, m ->
-                save { it.copy(transponderMinute = h * 60 + m) }
-            }, cfg.transponderMinute / 60, cfg.transponderMinute % 60, true).show()
-        }) { Text("Um ${hm(cfg.transponderMinute)}") }
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            DAYS.forEachIndexed { i, d ->
-                FilterChip(
-                    selected = cfg.transponderDays and (1 shl i) != 0,
-                    onClick = { save { it.copy(transponderDays = it.transponderDays xor (1 shl i)) } },
-                    label = { Text(d, maxLines = 1) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
+        EnableRow("Zweite Meldung beim Auslösen", cfg.transponderOn) { v -> save { it.copy(transponderOn = v) } }
         Text(
-            when {
-                !cfg.transponderOn -> "Aus."
-                next == null -> "Kein Wochentag gewählt."
-                else -> "Nächste Erinnerung: " + next.format(DateTimeFormatter.ofPattern("EE dd.MM. HH:mm", Locale.GERMAN))
-            },
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Text(
-            "Unabhängig vom Einstempeln: eigene Meldung zur gewählten Zeit, egal ob du an der FH bist.",
+            "Kommt zusammen mit „Einstempeln nicht vergessen“, bleibt aber beim Einloggen stehen – " +
+                "wegwischen oder antippen, wenn der Transponder aufgeladen ist.",
             style = MaterialTheme.typography.bodySmall,
         )
         TextButton(onClick = { AppScope.launch { Transponder.show(ctx) } }) { Text("Meldung testen") }

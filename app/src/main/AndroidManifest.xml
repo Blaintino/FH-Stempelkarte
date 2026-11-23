@@ -118,7 +118,7 @@
             android:name=".DetectReceiver"
             android:exported="false" />
 
-        <!-- Unabhängige Erinnerung „Transponder aufladen“. -->
+        <!-- Meldung „Transponder aufladen“ antippen = erledigt. -->
         <receiver
             android:name=".TransponderReceiver"
             android:exported="false" />

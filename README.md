@@ -35,9 +35,9 @@ dein eigenes Bild zurück. Alles lokal: keine Google-Dienste, kein Netzwerk, kei
 - **Akzentfarbe im Kartei Launcher** (eigener Launcher, optional): je Zustand eine frei
   gewählte Farbe für *Nicht eingeloggt* und *Eingeloggt*; bei *Neutral* gilt dort wieder die
   eigene Farbe. Den Launcher **vor** dieser App installieren/aktualisieren.
-- **Transponder aufladen**: zweiter, unabhängiger Hinweis mit eigener Uhrzeit und eigenen
-  Wochentagen (Standard: sonntags 20:00), eigene Meldung und eigener Benachrichtigungskanal.
-  Hat nichts mit dem Ein-/Ausloggen, dem Hintergrund oder der Erkennung zu tun.
+- **Transponder aufladen**: zweite Meldung, die zusammen mit der Einloggen-Erinnerung kommt
+  (gleiche Auslösung), aber beim Einloggen **nicht** verschwindet – sie bleibt, bis du sie
+  wegwischst oder antippst. Eigener Benachrichtigungskanal, in den Einstellungen abschaltbar.
 - **Prüfliste** (in den Einstellungen) mit Links in die Systemeinstellungen und *Test auslösen*.
 
 Hinweis: Für den pünktlichen Start nutzt die App einen Wecker-Alarm. Deshalb zeigt Android
@@ -93,7 +93,7 @@ gleichnamigen Secrets (`ANDROID_KEYSTORE_BASE64` statt Pfad). Derselbe Schlüsse
 | `Receivers.kt` | Fenster-, Erkennungs- und Boot-Receiver |
 | `Wallpapers.kt` | Hintergrund setzen, Bilder erzeugen/importieren |
 | `Notifier.kt` | Meldung „Einstempeln nicht vergessen“ |
-| `TransponderPlan.kt`, `Transponder.kt` | Erinnerung „Transponder aufladen“ (Zeitrechnung rein, getestet; Alarm, Meldung, Receiver) |
+| `Transponder.kt` | Erinnerung „Transponder aufladen“ (zweite Meldung beim Auslösen) |
 | `Widget.kt` | Startbildschirm-Widget (RemoteViews) |
 | `Zeus.kt` | ZEUS starten, Auswahl-Dialog (Startpunkt der App) |
 | `Store.kt` | SharedPreferences (Einstellungen + Zustand) |
