@@ -217,6 +217,7 @@ private fun MainScreen(tick: Int, padding: PaddingValues, onChecks: () -> Unit) 
         item { WindowCard(cfg, ::save) }
         item { LocationCard(cfg, ::save) }
         item { WifiCard(cfg, ::save) }
+        item { TransponderCard(cfg, ::save) }
         item {
             SectionCard("ZEUS-App") {
                 val label = remember(cfg.zeusPackage) { Zeus.label(ctx, cfg.zeusPackage) }
@@ -304,6 +305,20 @@ private fun WindowCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
             }
         }
         Text("Nur in diesem Fenster wird erkannt, ob du an der FH bist.", style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun TransponderCard(cfg: Config, save: ((Config) -> Config) -> Unit) {
+    val ctx = LocalContext.current
+    SectionCard("Transponder aufladen") {
+        EnableRow("Zweite Meldung beim Auslösen", cfg.transponderOn) { v -> save { it.copy(transponderOn = v) } }
+        Text(
+            "Kommt zusammen mit „Einstempeln nicht vergessen“, bleibt aber beim Einloggen stehen – " +
+                "wegwischen oder antippen, wenn der Transponder aufgeladen ist.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        TextButton(onClick = { AppScope.launch { Transponder.show(ctx) } }) { Text("Meldung testen") }
     }
 }
 

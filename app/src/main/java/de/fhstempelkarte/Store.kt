@@ -27,6 +27,8 @@ data class Config(
     val karteiAkzent: Boolean = false,
     val karteiOut: Int = KARTEI_OUT,
     val karteiIn: Int = KARTEI_IN,
+    /** Zweite Meldung „Transponder aufladen“ beim Auslösen ([Transponder]). */
+    val transponderOn: Boolean = true,
 ) {
     val hasLocation get() = lat != null && lon != null
 
@@ -126,6 +128,7 @@ class Store(ctx: Context) {
             karteiAkzent = p.getBoolean("karteiAkzent", false),
             karteiOut = p.getInt("karteiOut", Config.KARTEI_OUT),
             karteiIn = p.getInt("karteiIn", Config.KARTEI_IN),
+            transponderOn = p.getBoolean("transponderOn", true),
         )
         set(c) = put {
             putInt("start", c.window.startMinute)
@@ -147,6 +150,7 @@ class Store(ctx: Context) {
             putBoolean("karteiAkzent", c.karteiAkzent)
             putInt("karteiOut", c.karteiOut)
             putInt("karteiIn", c.karteiIn)
+            putBoolean("transponderOn", c.transponderOn)
         }
 
     fun update(change: (Config) -> Config) {

@@ -96,6 +96,13 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   wichtig. Hintergrund-Standort wurde an dem Morgen nicht abgefragt (Standort-Erkennung
   vermutlich aus/kein FH-Standort). ZEUS-Paket auf dem Gerät: `de.isgus.zeusmobile`.
   USB/adb ist inzwischen möglich (Gerät `SM-S948B`).
+- **Transponder aufladen (Wunsch des Nutzers, 2026-11-23)**: zweite Meldung (`Transponder.kt`,
+  Kanal `transponder`, ID 2), **gleiche Auslösung** wie die Einloggen-Erinnerung (aus
+  `Stempel.maybeTrigger` und `testTrigger` nach `setState`), aber eine *eigene* Meldung, damit
+  sie beim Einloggen stehen bleibt (`Notifier.cancel` betrifft nur ID 1). Der Transponder wird
+  an der Gebäudeaußenseite aufgeladen. Kein eigener Zeitplan (erster Entwurf mit eigener Uhrzeit
+  war nicht gewünscht). Antippen/Wegwischen schließt sie; abschaltbar über
+  `Config.transponderOn`. Auf dem Gerät noch nicht getestet.
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
 - **Akzentfarbe im Kartei Launcher (Wunsch des Nutzers, 2026-11-12, umgesetzt)**: die Stempelkarte
   nutzt die *offene* Schnittstelle des eigenen Launchers (`Blaintino/Launcher`, `SCHNITTSTELLE.md`

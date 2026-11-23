@@ -118,6 +118,11 @@
             android:name=".DetectReceiver"
             android:exported="false" />
 
+        <!-- Meldung „Transponder aufladen“ antippen = erledigt. -->
+        <receiver
+            android:name=".TransponderReceiver"
+            android:exported="false" />
+
         <receiver
             android:name=".BootReceiver"
             android:exported="true">

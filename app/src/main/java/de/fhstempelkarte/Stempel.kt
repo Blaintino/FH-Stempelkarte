@@ -53,6 +53,7 @@ object Stempel {
         store.lastTriggerInfo = "${now.format(INFO_FORMAT)} · $reason"
         EventLog.add(ctx, "AUSGELÖST: $reason")
         setState(ctx, StempelState.NICHT_EINGELOGGT)
+        Transponder.showIfOn(ctx)
         return true
     }
 
@@ -60,6 +61,7 @@ object Stempel {
     fun testTrigger(ctx: Context) {
         Store(ctx).lastTriggerInfo = "${ZonedDateTime.now().format(INFO_FORMAT)} · Test"
         setState(ctx, StempelState.NICHT_EINGELOGGT)
+        Transponder.showIfOn(ctx)
     }
 
     private val INFO_FORMAT = DateTimeFormatter.ofPattern("EE dd.MM. HH:mm")
