@@ -27,6 +27,10 @@ data class Config(
     val karteiAkzent: Boolean = false,
     val karteiOut: Int = KARTEI_OUT,
     val karteiIn: Int = KARTEI_IN,
+    /** Unabhängige Erinnerung „Transponder aufladen“ ([Transponder]); Minuten ab Mitternacht, Bit 0 = Montag. */
+    val transponderOn: Boolean = true,
+    val transponderMinute: Int = 20 * 60,
+    val transponderDays: Int = TransponderPlan.SUNDAY,
 ) {
     val hasLocation get() = lat != null && lon != null
 
@@ -103,6 +107,11 @@ class Store(ctx: Context) {
         get() = p.getLong("plannedStart", 0)
         set(v) = put { putLong("plannedStart", v) }
 
+    /** Zuletzt geplante Transponder-Erinnerung, nur fürs Protokoll. */
+    var plannedTransponder: Long
+        get() = p.getLong("plannedTransponder", 0)
+        set(v) = put { putLong("plannedTransponder", v) }
+
     var config: Config
         get() = Config(
             window = WindowConfig(
@@ -126,6 +135,9 @@ class Store(ctx: Context) {
             karteiAkzent = p.getBoolean("karteiAkzent", false),
             karteiOut = p.getInt("karteiOut", Config.KARTEI_OUT),
             karteiIn = p.getInt("karteiIn", Config.KARTEI_IN),
+            transponderOn = p.getBoolean("transponderOn", true),
+            transponderMinute = p.getInt("transponderMinute", 20 * 60),
+            transponderDays = p.getInt("transponderDays", TransponderPlan.SUNDAY),
         )
         set(c) = put {
             putInt("start", c.window.startMinute)
@@ -147,6 +159,9 @@ class Store(ctx: Context) {
             putBoolean("karteiAkzent", c.karteiAkzent)
             putInt("karteiOut", c.karteiOut)
             putInt("karteiIn", c.karteiIn)
+            putBoolean("transponderOn", c.transponderOn)
+            putInt("transponderMinute", c.transponderMinute)
+            putInt("transponderDays", c.transponderDays)
         }
 
     fun update(change: (Config) -> Config) {

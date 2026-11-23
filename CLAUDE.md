@@ -96,6 +96,13 @@ mit `zeus`/`isgus` stehen oben) – nicht raten und nicht fest eintragen.
   wichtig. Hintergrund-Standort wurde an dem Morgen nicht abgefragt (Standort-Erkennung
   vermutlich aus/kein FH-Standort). ZEUS-Paket auf dem Gerät: `de.isgus.zeusmobile`.
   USB/adb ist inzwischen möglich (Gerät `SM-S948B`).
+- **Transponder aufladen (Wunsch des Nutzers, 2026-11-23)**: zweiter, *unabhängiger* Hinweis
+  (`Transponder.kt`, Zeitrechnung rein in `TransponderPlan.kt`, `TransponderPlanTest`). Eigene
+  Uhrzeit/Wochentage (`Config.transponderOn`/`Minute`/`Days`, Standard So 20:00), eigener Kanal
+  `transponder`, Meldungs-ID 2, eigener Alarm (`setExactAndAllowWhileIdle`, kein Wecker-Symbol)
+  und `TransponderReceiver`. Geplant aus `Scheduler.planAll` (gleiche Anlässe) und nach jeder
+  Erinnerung. Berührt nie Zustand, Hintergrund oder Erkennung – nicht über `setState` führen.
+  Auf dem Gerät noch nicht getestet.
 - Prüfliste (`Reliability.kt`): neue Voraussetzungen dort ergänzen.
 - **Akzentfarbe im Kartei Launcher (Wunsch des Nutzers, 2026-11-12, umgesetzt)**: die Stempelkarte
   nutzt die *offene* Schnittstelle des eigenen Launchers (`Blaintino/Launcher`, `SCHNITTSTELLE.md`

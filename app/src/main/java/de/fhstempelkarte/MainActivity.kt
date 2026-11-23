@@ -12,6 +12,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         Notifier.ensureChannel(this)
+        Transponder.ensureChannel(this)
         // Repariert verlorene Alarme (z. B. nach „Stopp erzwingen“).
         val ctx = applicationContext
         AppScope.launch { if (Scheduler.planAll(ctx)) Detector.checkNow(ctx, "App geöffnet") }

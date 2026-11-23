@@ -78,6 +78,20 @@ object Reliability {
             Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, it.packageName)
         }
 
+        if (cfg.transponderOn) {
+            Transponder.ensureChannel(ctx)
+            val tc = ctx.getSystemService(NotificationManager::class.java).getNotificationChannel(Transponder.CHANNEL)
+            list += Check(
+                "Meldung „Transponder aufladen“ erlaubt",
+                NotificationManagerCompat.from(ctx).areNotificationsEnabled() &&
+                    (tc == null || tc.importance != NotificationManager.IMPORTANCE_NONE),
+                "Eigener Benachrichtigungskanal für die Transponder-Erinnerung.",
+                "Einstellungen öffnen",
+            ) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, it.packageName)
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= 31) {
             list += Check(
                 "Exakte Wecker-Alarme",

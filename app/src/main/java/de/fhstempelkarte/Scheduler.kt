@@ -40,6 +40,8 @@ object Scheduler {
      * nicht auf die Sekunde stimmen: exakt-und-idle, damit kein zweiter „Wecker“ erscheint.
      */
     fun planAll(ctx: Context): Boolean {
+        // Unabhängige Transponder-Erinnerung mitplanen (gleiche Anlässe: Boot, Update, App-Start …).
+        runCatching { Transponder.plan(ctx) }
         val store = Store(ctx)
         val cfg = store.config.window
         val am = ctx.getSystemService(AlarmManager::class.java)
